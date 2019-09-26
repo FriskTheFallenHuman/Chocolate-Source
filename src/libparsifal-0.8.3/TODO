@@ -1,0 +1,9 @@
+TODO for parsifal
+-----------------
+
+* Memory allocation could be "heaps better", string interning, smart heap to
+  avoid memory fragmentation etc...
+* Some profiler runs and optimizations...
+* Maybe internal unicode (wchar_t) by conditional compilation? maybe not.
+* There's lot of room for improvement in optimization department.
+

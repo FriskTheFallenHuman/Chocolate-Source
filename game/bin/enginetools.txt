@@ -1,0 +1,8 @@
+"enginetools"
+{
+	"library"	"tools/actbusy.dll"
+	"library"	"tools/commedit.dll"
+	"library"	"tools/pet.dll"
+	"library"	"tools/vcdblock.dll"
+	"library"	"tools/vmt.dll"
+}

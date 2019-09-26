@@ -1,0 +1,272 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>samples\winurl\winurl.c</title>
+	<link rel="stylesheet" type="text/css" href="highlight.css">
+</head>
+<body>
+<pre><span class="dir">#include &lt;stdio.h&gt;
+</span><span class="dir">#include </span><span class="dstr">&quot;windows.h&quot;</span><span class="dir">
+</span><span class="dir">#include </span><span class="dstr">&quot;urlmon.h&quot;</span><span class="dir">
+</span><span class="dir">#include </span><span class="dstr">&quot;libparsifal/parsifal.h&quot;</span><span class="dir">
+</span>
+<span class="dir">#define MAX_URILEN 512
+</span>XMLCH argbase[MAX_URILEN] = {<span class="str">'</span><span class="esc">\0</span><span class="str">'</span>}; <span class="com">/* used as base directory if arg[1] is specified as command line param */</span>
+
+<span class="typ">int </span>StartElement(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *uri, <span class="typ">const </span>XMLCH *localName, <span class="typ">const </span>XMLCH *qName, LPXMLVECTOR atts);
+<span class="typ">int </span>EndElement(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *uri, <span class="typ">const </span>XMLCH *localName, <span class="typ">const </span>XMLCH *qName);
+<span class="typ">int </span>PI(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *target, <span class="typ">const </span>XMLCH *data);
+<span class="typ">int </span>Characters(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *chars, <span class="typ">int </span>cbChars);
+<span class="typ">int </span>Comment(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *chars, <span class="typ">int </span>cbChars);
+<span class="typ">int </span>CharactersWide(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *chars, <span class="typ">int </span>cbChars);
+<span class="typ">int </span>StartCData(<span class="typ">void </span>*UserData);
+<span class="typ">int </span>EndCData(<span class="typ">void </span>*UserData);
+<span class="typ">int </span>DoctypeDecl(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *name, <span class="typ">const </span>XMLCH *publicID, <span class="typ">const </span>XMLCH *systemID, <span class="typ">int </span>hasInternalSubset);
+<span class="typ">void </span>ErrorHandler(LPXMLPARSER parser);
+<span class="typ">int </span>ResolveEntity(<span class="typ">void </span>*UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader);
+<span class="typ">int </span>FreeInputData(<span class="typ">void </span>*UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader);
+<span class="typ">int </span>SkippedEntity(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *name);
+<span class="typ">int </span>urlstream(BYTE *buf, <span class="typ">int </span>cBytes, <span class="typ">int </span>*cBytesActual, <span class="typ">void </span>*inputData);
+
+<span class="typ">int </span>StartElement(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *uri, <span class="typ">const </span>XMLCH *localName, <span class="typ">const </span>XMLCH *qName, LPXMLVECTOR atts)
+{
+  <span class="key">if </span>(*uri)
+    printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">Start tag: %s uri: %s localName: %s&quot;</span>, qName, uri, localName);
+  <span class="key">else
+    </span>printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">Start tag: %s&quot;</span>, qName);
+
+  <span class="key">if </span>(atts-&gt;length) {
+    <span class="typ">int </span>i;
+    LPXMLRUNTIMEATT att;
+
+    printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">has %d attributes:&quot;</span>, atts-&gt;length);
+    <span class="key">for </span>(i=<span class="num">0</span>; i&lt;atts-&gt;length; i++) {
+      att = (LPXMLRUNTIMEATT)XMLVector_Get(atts, i);
+
+      <span class="key">if </span>(*att-&gt;uri)
+        printf(<span class="str">&quot;</span><span class="esc">\n  </span><span class="str">Name: %s Value: %s Prefix: %s LocalName: %s Uri: %s&quot;</span>,
+          att-&gt;qname, att-&gt;value,
+              att-&gt;prefix, att-&gt;localName,
+                att-&gt;uri);
+      <span class="key">else
+        </span>printf(<span class="str">&quot;</span><span class="esc">\n  </span><span class="str">Name: %s Value: %s&quot;</span>,
+          att-&gt;qname, att-&gt;value);
+    }
+
+    <span class="com">/* this demonstrates XMLParser_GetNamedItem and XML_ABORT, just
+      change the name &quot;findthis&quot; here to abort parsing when
+      this attribute is encountered: */</span>
+
+    <span class="key">if </span>(att = XMLParser_GetNamedItem(UserData, <span class="str">&quot;findthis&quot;</span>)) {
+      printf(<span class="str">&quot;FOUND ATTRIBUTE %s value: %s</span><span class="esc">\n</span><span class="str">Aborting...</span><span class="esc">\n</span><span class="str">&quot;</span>, att-&gt;qname, att-&gt;value);
+      <span class="key">return </span>XML_ABORT;
+    }
+  }
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>EndElement(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *uri, <span class="typ">const </span>XMLCH *localName, <span class="typ">const </span>XMLCH *qName)
+{
+  printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">End tag: %s&quot;</span>, qName);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>Characters(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *chars, <span class="typ">int </span>cbChars)
+{
+  printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">Text (%d bytes): &quot;</span>, cbChars);
+  <span class="key">for </span>(; cbChars; cbChars--, chars++) putc(*chars, stdout);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>SkippedEntity(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *name)
+{
+  printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">skipped entity: %s&quot;</span>, name);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>DoctypeDecl(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *name, <span class="typ">const </span>XMLCH *publicID, <span class="typ">const </span>XMLCH *systemID, <span class="typ">int </span>hasInternalSubset)
+{
+  printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">DOCTYPE Name: %s&quot;</span>, name);
+  <span class="key">if </span>(publicID) printf(<span class="str">&quot; publicID: %s&quot;</span>, publicID);
+  <span class="key">if </span>(systemID) printf(<span class="str">&quot; systemID: %s&quot;</span>, systemID);
+  printf(<span class="str">&quot; hasInternalSubset: %d&quot;</span>, hasInternalSubset);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>StartCData(<span class="typ">void </span>*UserData)
+{
+  printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">Start CData tag</span><span class="esc">\n</span><span class="str">&quot;</span>);
+  <span class="com">/* will call Characters to report CDATA contents */</span>
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>EndCData(<span class="typ">void </span>*UserData)
+{
+  printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">End CData tag&quot;</span>);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>Comment(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *chars, <span class="typ">int </span>cbChars)
+{
+  printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">Comment (%d bytes): &quot;</span>, cbChars);
+  <span class="key">for </span>(; cbChars; cbChars--, chars++) putc(*chars, stdout);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>PI(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *target, <span class="typ">const </span>XMLCH *data)
+{
+  printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">PI tag - target: %s data: %s&quot;</span>, target, ((*data) ? data : <span class="str">&quot;no data&quot;</span>));
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">void </span>ErrorHandler(LPXMLPARSER parser)
+{
+  <span class="com">/* you should treat ERR_XMLP_ABORT as &quot;user error&quot; and give somekind of
+    description before returning from callbacks, otherwise we present parser error: */</span>
+  <span class="key">if </span>(parser-&gt;ErrorCode != ERR_XMLP_ABORT) {
+    XMLCH *SystemID = XMLParser_GetSystemID(parser);
+    LPXMLENTITY curEnt = XMLParser_GetCurrentEntity(parser);
+    printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">Parsing Error: %s</span><span class="esc">\n</span><span class="str">Code: %d&quot;</span>,
+      parser-&gt;ErrorString, parser-&gt;ErrorCode);
+    <span class="key">if </span>(curEnt &amp;&amp; !curEnt-&gt;systemID) printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">in entity: '%s'&quot;</span>, curEnt-&gt;name);
+    <span class="key">if </span>(SystemID) printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">SystemID: '%s'&quot;</span>, SystemID);
+  }
+  printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">Line: %d</span><span class="esc">\n</span><span class="str">Column: %d&quot;</span>, parser-&gt;ErrorLine, parser-&gt;ErrorColumn);
+}
+
+<span class="com">/*
+  Converts UTF-8 string to wchar_t string
+  and shows converted string in MessageBoxW
+
+  Set charactersHandler = CharactersWide if
+  you want to test UTF-8 to wchar_t conversion for
+  text content, you shouldn't run large documents with
+  CharactersWide because those MessageBoxes can get annoying...
+*/</span>
+<span class="typ">int </span>CharactersWide(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *chars, <span class="typ">int </span>cbChars)
+{
+  <span class="typ">wchar_t </span>wstr[<span class="num">1024</span>];
+  <span class="typ">int </span>size;
+
+  <span class="key">if </span>(cbChars &gt; <span class="num">1023</span>) cbChars = <span class="num">1024</span>;
+
+  <span class="key">if </span>((size = MultiByteToWideChar(CP_UTF8, <span class="num">0</span>, chars, cbChars, wstr, <span class="num">1024</span>))) {
+    *(wstr+size) = L<span class="str">'</span><span class="esc">\0</span><span class="str">'</span>;
+    MessageBoxW(NULL, wstr, L<span class="str">&quot;WinUrl sample&quot;</span>, MB_OK);
+  }
+  <span class="key">else </span>{
+    printf(<span class="str">&quot;Unicode conversion error!&quot;</span>);
+    <span class="key">return </span>XML_ABORT;
+  }
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>ResolveEntity(<span class="typ">void </span>*UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader)
+{
+  IStream *pStm = NULL; <span class="com">/* pointer to COM stream */</span>
+  HRESULT hr;
+  XMLCH uri[MAX_URILEN];
+  XMLCH *base = XMLParser_GetPrefixMapping((LPXMLPARSER)UserData, <span class="str">&quot;xml:base&quot;</span>);
+
+  <span class="key">if </span>(argbase) {
+    strcpy(uri, argbase);
+    strcat(uri, entity-&gt;systemID);
+  }
+  <span class="key">else if </span>(base) {
+    printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">xml:base set to %s&quot;</span>, base);
+    strcpy(uri, base);
+    strcat(uri, entity-&gt;systemID);
+  }
+  <span class="key">else </span>{
+    strcpy(uri, entity-&gt;systemID);
+  }
+
+  hr = URLOpenBlockingStream(<span class="num">0</span>, uri, &amp;pStm, <span class="num">0</span>,<span class="num">0</span>);
+  <span class="key">if </span>(!SUCCEEDED(hr)) {
+    printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">Error opening url '%s'&quot;</span>, uri);
+    <span class="key">if </span>(pStm) pStm-&gt;lpVtbl-&gt;Release(pStm);
+    <span class="key">return </span>XML_ABORT;
+  }
+
+  reader-&gt;inputData = pStm;
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>FreeInputData(<span class="typ">void </span>*UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader)
+{
+  IStream *pStm = (IStream*)reader-&gt;inputData;
+  <span class="key">if </span>(pStm) pStm-&gt;lpVtbl-&gt;Release(pStm);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>urlstream(BYTE *buf, <span class="typ">int </span>cBytes, <span class="typ">int </span>*cBytesActual, <span class="typ">void </span>*inputData)
+{
+  <span class="com">/* calls IStream.Read in C COM way: */</span>
+  HRESULT hr = ((IStream*)inputData)-&gt;lpVtbl-&gt;Read((IStream*)inputData, buf, cBytes, cBytesActual);
+  <span class="key">return </span>(*cBytesActual &lt; cBytes || !SUCCEEDED(hr));
+}
+
+<span class="typ">int </span>main(<span class="typ">int </span>argc, <span class="typ">char</span>* argv[])
+{
+  LPXMLPARSER parser;
+  IStream *pStm = NULL; <span class="com">/* pointer to COM stream */</span>
+  HRESULT hr;
+  <span class="typ">char </span>szUrl[MAX_URILEN];
+
+  <span class="key">if </span>(argc == <span class="num">2</span>) {
+    strcpy(argbase, argv[<span class="num">1</span>]);
+    printf(<span class="str">&quot;Base directory set to: %s</span><span class="esc">\n</span><span class="str">&quot;</span>, argbase);
+  }
+
+  printf(<span class="str">&quot;</span><span class="esc">\n</span><span class="str">WINURL Parsifal sample</span><span class="esc">\n\n</span><span class="str">Url to parse: &quot;</span>);
+  gets(szUrl);
+
+  <span class="com">/* open the url stream: */</span>
+  hr = URLOpenBlockingStream(<span class="num">0</span>, szUrl, &amp;pStm, <span class="num">0</span>,<span class="num">0</span>);
+  <span class="key">if </span>(!SUCCEEDED(hr)) {
+    puts(<span class="str">&quot;Error opening url!&quot;</span>);
+    <span class="key">if </span>(pStm) pStm-&gt;lpVtbl-&gt;Release(pStm);
+    exit(<span class="num">1</span>);
+  }
+
+  <span class="key">if </span>(!XMLParser_Create(&amp;parser)) {
+    puts(<span class="str">&quot;Error creating parser!&quot;</span>);
+    exit(<span class="num">1</span>);
+  }
+
+  parser-&gt;startElementHandler = StartElement;
+  parser-&gt;endElementHandler = EndElement;
+  parser-&gt;charactersHandler = Characters; <span class="com">/* set to CharactersWide
+    to convert UTF-8 -&gt; wchar_t */</span>
+  parser-&gt;processingInstructionHandler = PI;
+  parser-&gt;commentHandler = Comment;
+  parser-&gt;startCDATAHandler = StartCData;
+  parser-&gt;endCDATAHandler = EndCData;
+  parser-&gt;errorHandler = ErrorHandler;
+  parser-&gt;startDTDHandler = DoctypeDecl;
+  parser-&gt;skippedEntityHandler = SkippedEntity;
+  parser-&gt;resolveEntityHandler = ResolveEntity;
+  parser-&gt;externalEntityParsedHandler = FreeInputData;
+  parser-&gt;UserData = parser;
+
+  printf(<span class="str">&quot;XMLFlags:</span><span class="esc">\n</span><span class="str">&quot;</span>);
+  printf(<span class="str">&quot;XMLFLAG_NAMESPACES: %d</span><span class="esc">\n</span><span class="str">&quot;</span>, _XMLParser_GetFlag(parser,XMLFLAG_NAMESPACES));
+  printf(<span class="str">&quot;XMLFLAG_NAMESPACE_PREFIXES: %d</span><span class="esc">\n</span><span class="str">&quot;</span>, _XMLParser_GetFlag(parser,XMLFLAG_NAMESPACE_PREFIXES));
+  printf(<span class="str">&quot;XMLFLAG_EXTERNAL_GENERAL_ENTITIES: %d</span><span class="esc">\n</span><span class="str">&quot;</span>, _XMLParser_GetFlag(parser,XMLFLAG_EXTERNAL_GENERAL_ENTITIES));
+  printf(<span class="str">&quot;XMLFLAG_PRESERVE_GENERAL_ENTITIES: %d</span><span class="esc">\n</span><span class="str">&quot;</span>, _XMLParser_GetFlag(parser,XMLFLAG_PRESERVE_GENERAL_ENTITIES));
+  printf(<span class="str">&quot;XMLFLAG_UNDEF_GENERAL_ENTITIES: %d</span><span class="esc">\n</span><span class="str">&quot;</span>, _XMLParser_GetFlag(parser,XMLFLAG_UNDEF_GENERAL_ENTITIES));
+  printf(<span class="str">&quot;XMLFLAG_PRESERVE_WS_ATTRIBUTES: %d</span><span class="esc">\n</span><span class="str">&quot;</span>, _XMLParser_GetFlag(parser,XMLFLAG_PRESERVE_WS_ATTRIBUTES));
+
+  XMLParser_Parse(parser, urlstream, pStm, NULL);
+
+  <span class="key">if </span>(pStm) pStm-&gt;lpVtbl-&gt;Release(pStm);
+  XMLParser_Free(parser);
+
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+
+</pre>
+</body>
+</html>
+<!--HTML generated by highlight 2.0-17, http://www.andre-simon.de/-->

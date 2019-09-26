@@ -1,0 +1,325 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>samples\canonxml\canonxml.c</title>
+	<link rel="stylesheet" type="text/css" href="highlight.css">
+</head>
+<body>
+<pre><span class="dir">#include &lt;stdio.h&gt;
+</span><span class="dir">#include &lt;stdlib.h&gt;
+</span><span class="dir">#include &lt;string.h&gt;
+</span><span class="dir">#include </span><span class="dstr">&quot;libparsifal/parsifal.h&quot;</span><span class="dir">
+</span>
+<span class="dir">#define PFOUT (((CANONXMLPARSER*)UserData)-&gt;pfout)
+</span><span class="dir">#define XMLNSURI   </span><span class="dstr">&quot;http://www.w3.org/2000/xmlns/&quot;</span><span class="dir">
+</span><span class="dir">#define XMLURI    </span><span class="dstr">&quot;http://www.w3.org/XML/1998/namespace&quot;</span><span class="dir">
+</span><span class="dir">#ifndef MAX_PATH
+</span><span class="dir">#define MAX_PATH 256
+</span><span class="dir">#endif
+</span>
+<span class="key">typedef </span><span class="typ">struct </span>tagCANONXMLPARSER {
+  LPXMLPARSER parser;
+  <span class="typ">FILE </span>*pfout;
+  <span class="typ">int </span>hasIntSubset;
+  <span class="typ">char </span>doctypeName[<span class="num">256</span>];
+  <span class="typ">char </span>xmlbase[MAX_PATH];
+} CANONXMLPARSER;
+
+<span class="com">/* parser events: */</span>
+<span class="typ">int </span>StartElement(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *uri, <span class="typ">const </span>XMLCH *localName, <span class="typ">const </span>XMLCH *qName, LPXMLVECTOR atts);
+<span class="typ">int </span>EndElement(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *uri, <span class="typ">const </span>XMLCH *localName, <span class="typ">const </span>XMLCH *qName);
+<span class="typ">int </span>EscCharacters(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *chars, <span class="typ">int </span>cbChars);
+<span class="typ">int </span>Characters(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *chars, <span class="typ">int </span>cbChars);
+<span class="typ">int </span>Comment(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *chars, <span class="typ">int </span>cbChars);
+<span class="typ">int </span>StartDTD(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *Name, <span class="typ">const </span>XMLCH *publicId, <span class="typ">const </span>XMLCH *systemId, <span class="typ">int </span>hasInternalSubset);
+<span class="typ">int </span>EndDTD(<span class="typ">void </span>*UserData);
+<span class="typ">int </span>DummyEvent(<span class="typ">void </span>*UserData);
+<span class="typ">int </span>XmlDecl(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *version, <span class="typ">const </span>XMLCH *encoding, <span class="typ">const </span>XMLCH *standalone);
+<span class="typ">int </span>Pi(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *target, <span class="typ">const </span>XMLCH *data);
+<span class="typ">int </span>ResolveEntity(<span class="typ">void </span>*UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader);
+<span class="typ">int </span>FreeInputData(<span class="typ">void </span>*UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader);
+<span class="typ">int </span>NotationDecl(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *name, <span class="typ">const </span>XMLCH *publicID, <span class="typ">const </span>XMLCH *systemID);
+<span class="typ">int </span>StartDTDforNotationDecl(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *name, <span class="typ">const </span>XMLCH *publicId, <span class="typ">const </span>XMLCH *systemId, <span class="typ">int </span>hasInternalSubset);
+<span class="typ">int </span>EndDTDforNotationDecl(<span class="typ">void </span>*UserData);
+
+<span class="typ">int </span>cstream(BYTE *buf, <span class="typ">int </span>cBytes, <span class="typ">int </span>*cBytesActual, <span class="typ">void </span>*inputData);
+LPXMLVECTOR CloneXMLVector(LPXMLVECTOR source);
+<span class="typ">int </span>attcmp(<span class="typ">const void </span>*att1, <span class="typ">const void </span>*att2);
+<span class="typ">void </span>PrintEsc(<span class="typ">FILE </span>*fp, <span class="typ">const </span>XMLCH *str, <span class="typ">int </span>len);
+
+<span class="typ">int </span>cstream(BYTE *buf, <span class="typ">int </span>cBytes, <span class="typ">int </span>*cBytesActual, <span class="typ">void </span>*inputData)
+{
+  *cBytesActual = fread(buf, <span class="num">1</span>, cBytes, (<span class="typ">FILE</span>*)inputData);
+  <span class="key">return </span>(*cBytesActual &lt; cBytes);
+}
+
+<span class="typ">int </span>DummyEvent(<span class="typ">void </span>*UserData)
+{
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>StartElement(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *uri, <span class="typ">const </span>XMLCH *localName, <span class="typ">const </span>XMLCH *qName, LPXMLVECTOR atts)
+{
+  fprintf(PFOUT, <span class="str">&quot;&lt;%s&quot;</span>, qName);
+  <span class="key">if </span>(atts-&gt;length) {
+    <span class="typ">int </span>i;
+    LPXMLRUNTIMEATT att;
+    LPXMLVECTOR satts;
+
+    <span class="key">if </span>(atts-&gt;length &gt; <span class="num">1</span>) {
+      <span class="key">if </span>(!(satts = CloneXMLVector(atts))) <span class="key">return </span>XML_ABORT;
+      qsort((<span class="typ">void</span>*)satts-&gt;array, satts-&gt;length, <span class="key">sizeof</span>(XMLRUNTIMEATT), attcmp);
+    }
+    <span class="key">else </span>{
+      satts = atts;
+    }
+
+    <span class="key">for </span>(i=<span class="num">0</span>; i&lt;satts-&gt;length; i++)
+    {
+      att = XMLVector_Get(satts, i);
+      fprintf(PFOUT, <span class="str">&quot; %s=</span><span class="esc">\&quot;</span><span class="str">&quot;</span>, att-&gt;qname);
+      PrintEsc(PFOUT, att-&gt;value, strlen(att-&gt;value));
+      putc(<span class="str">'</span><span class="esc">\&quot;</span><span class="str">'</span>, PFOUT);
+    }
+    <span class="key">if </span>(atts-&gt;length &gt; <span class="num">1</span>) XMLVector_Free(satts);
+  }
+  putc(<span class="str">'&gt;'</span>, PFOUT);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>EndElement(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *uri, <span class="typ">const </span>XMLCH *localName, <span class="typ">const </span>XMLCH *qName)
+{
+  fprintf(PFOUT, <span class="str">&quot;&lt;/%s&gt;&quot;</span>, qName);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>EscCharacters(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *chars, <span class="typ">int </span>cbChars)
+{
+  PrintEsc(PFOUT, chars, cbChars);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>Characters(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *chars, <span class="typ">int </span>cbChars)
+{
+  fwrite(chars, cbChars, <span class="num">1</span>, PFOUT);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>NotationDecl(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *name, <span class="typ">const </span>XMLCH *publicID, <span class="typ">const </span>XMLCH *systemID)
+{
+  <span class="key">if </span>(!((CANONXMLPARSER*)UserData)-&gt;hasIntSubset) {
+    ((CANONXMLPARSER*)UserData)-&gt;hasIntSubset = <span class="num">1</span>;
+    StartDTD(UserData, ((CANONXMLPARSER*)UserData)-&gt;doctypeName, NULL, NULL, <span class="num">1</span>);
+    putc(<span class="str">'</span><span class="esc">\xA'</span><span class="str">, PFOUT);
+  }
+
+  fprintf(PFOUT, &quot;&lt;!NOTATION %s &quot;, name);
+  if (publicID) fprintf(PFOUT, &quot;PUBLIC </span><span class="esc">\'</span><span class="str">%s</span><span class="esc">\'</span><span class="str">&quot;, publicID);
+  else fputs(&quot;SYSTEM&quot;, PFOUT);
+
+  if (systemID) fprintf(PFOUT, &quot; </span><span class="esc">\'</span><span class="str">%s</span><span class="esc">\'</span><span class="str">&gt;</span><span class="esc">\xA&quot;</span><span class="str">, systemID);
+  else fputs(&quot;&gt;</span><span class="esc">\xA&quot;</span><span class="str">, PFOUT);
+  return 0;
+}
+
+int Comment(void *UserData, const XMLCH *chars, int cbChars)
+{
+  fputs(&quot;&lt;!--&quot;, PFOUT);
+  Characters(UserData, chars, cbChars);
+  fputs(&quot;--&gt;&quot;, PFOUT);
+  return 0;
+}
+
+void PrintEsc(FILE *fp, const XMLCH *str, int len)
+{
+  for (; len--; str++) {
+    switch(*str) {
+      case '</span>&amp;<span class="str">': fputs(&quot;&amp;amp;&quot;, fp); break;
+      case '</span><span class="esc">\&quot;</span><span class="str">': fputs(&quot;&amp;quot;&quot;, fp); break;
+      /*case '</span><span class="esc">\'</span><span class="str">': fprintf(&quot;&amp;apos;&quot;, fp); break;*/
+      case '</span>&lt;<span class="str">': fputs(&quot;&amp;lt;&quot;, fp); break;
+      case '</span>&gt;<span class="str">': fputs(&quot;&amp;gt;&quot;, fp); break;
+      case '</span><span class="esc">\x9'</span>: fputs(<span class="str">&quot;&amp;#9;&quot;</span>, fp); <span class="key">break</span>;
+      <span class="key">case </span><span class="str">'</span><span class="esc">\x0A</span><span class="str">'</span>: fputs(<span class="str">&quot;&amp;#10;&quot;</span>, fp); <span class="key">break</span>;
+      <span class="key">case </span><span class="str">'</span><span class="esc">\x0D</span><span class="str">'</span>: fputs(<span class="str">&quot;&amp;#13;&quot;</span>, fp); <span class="key">break</span>;
+      <span class="key">default</span>: fputc(*str, fp); <span class="key">break</span>;
+    }
+  }
+}
+
+<span class="typ">int </span>Pi(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *target, <span class="typ">const </span>XMLCH *data)
+{
+  fprintf(PFOUT, <span class="str">&quot;&lt;?%s %s?&gt;&quot;</span>, target, data);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>StartDTDforNotationDecl(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *name, <span class="typ">const </span>XMLCH *publicId, <span class="typ">const </span>XMLCH *systemId, <span class="typ">int </span>hasInternalSubset)
+{
+  strcpy(((CANONXMLPARSER*)UserData)-&gt;doctypeName, name);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>EndDTDforNotationDecl(<span class="typ">void </span>*UserData)
+{
+  <span class="key">if </span>(((CANONXMLPARSER*)UserData)-&gt;hasIntSubset) EndDTD(UserData);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>StartDTD(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *name, <span class="typ">const </span>XMLCH *publicId, <span class="typ">const </span>XMLCH *systemId, <span class="typ">int </span>hasInternalSubset)
+{
+  fprintf(PFOUT, <span class="str">&quot;&lt;!DOCTYPE %s&quot;</span>, name);
+
+    <span class="key">if </span>(publicId)
+        fprintf(PFOUT, <span class="str">&quot; PUBLIC </span><span class="esc">\&quot;</span><span class="str">%s</span><span class="esc">\&quot; \&quot;</span><span class="str">%s</span><span class="esc">\&quot;</span><span class="str">&quot;</span>, publicId, systemId);
+    <span class="key">else if </span>(systemId)
+        fprintf(PFOUT, <span class="str">&quot; SYSTEM </span><span class="esc">\&quot;</span><span class="str">%s</span><span class="esc">\&quot;</span><span class="str">&quot;</span>, systemId);
+
+    <span class="key">if </span>(hasInternalSubset) {
+      ((CANONXMLPARSER*)UserData)-&gt;hasIntSubset = <span class="num">1</span>;
+      fputs(<span class="str">&quot; [&quot;</span>, PFOUT);
+    }
+    <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>EndDTD(<span class="typ">void </span>*UserData)
+{
+  <span class="key">if </span>(((CANONXMLPARSER*)UserData)-&gt;hasIntSubset) fputs(<span class="str">&quot;]&gt;</span><span class="esc">\xA&quot;</span><span class="str">, PFOUT);
+  else fputs(&quot;</span>&gt;<span class="esc">\xA&quot;</span>, PFOUT);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>ResolveEntity(<span class="typ">void </span>*UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader)
+{
+  <span class="typ">FILE </span>*f;
+  <span class="typ">char </span>file[MAX_PATH];
+
+  strcpy(file, ((CANONXMLPARSER*)UserData)-&gt;xmlbase);
+  strcat(file, entity-&gt;systemID);
+
+  <span class="key">if </span>(!(f = fopen(file, <span class="str">&quot;rb&quot;</span>))) {
+    printf(<span class="str">&quot;error opening file '%s'!</span><span class="esc">\n</span><span class="str">&quot;</span>, file);
+    <span class="key">return </span>XML_ABORT;
+  }
+  reader-&gt;inputData = f;
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="com">/* note: externalEntityParsedHandler is never called unless reader-&gt;inputData
+  parameter is given in resolveEntityHandler, thus it's safe to free
+  the data without any checks.
+   note also: this is called when parsing Error occurred too, so
+   only thing you must ensure is that you SET VALID reader-&gt;inputData
+   or NULL (default) in resolveEntityHandler */</span>
+<span class="typ">int </span>FreeInputData(<span class="typ">void </span>*UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader)
+{
+  fclose((<span class="typ">FILE</span>*)reader-&gt;inputData);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+LPXMLVECTOR CloneXMLVector(LPXMLVECTOR source)
+{
+  LPXMLVECTOR dest;
+  <span class="key">if </span>(!XMLVector_Create(&amp;dest, source-&gt;length, source-&gt;itemSize)) <span class="key">return </span>NULL;
+  dest-&gt;length = source-&gt;length;
+  memcpy(dest-&gt;array, source-&gt;array, dest-&gt;length * dest-&gt;itemSize);
+  <span class="key">return </span>dest;
+}
+
+<span class="com">/* attcmp for qsort
+  sorting attributes in canonical xml is quite tricky 'cos of namespace declarations.
+  We handle some of it, not everything (like removing redundant xmlns=&quot;&quot; attributes).
+  here's what happens:
+  - all xmlns/xmlns:xxx attributes are put before any other attribs
+  - normal attributes e.g. att=&quot;val&quot; are put before namespaced xxx:att attributes
+  - if both attributes are in a namespace, they are sorted by uris, not qnames.
+*/</span>
+<span class="typ">int </span>attcmp(<span class="typ">const void </span>*att1, <span class="typ">const void </span>*att2)
+{
+    LPXMLRUNTIMEATT a1 = (LPXMLRUNTIMEATT)att1;
+    LPXMLRUNTIMEATT a2 = (LPXMLRUNTIMEATT)att2;
+   <span class="typ">int </span>n1 = (!(strcmp(a1-&gt;uri, XMLNSURI)));
+   <span class="typ">int </span>n2 = (!(strcmp(a2-&gt;uri, XMLNSURI)));
+
+   <span class="key">if </span>(n1 != n2) <span class="com">/* other one has XMLNSURI, it will be first: */</span>
+     <span class="key">return </span>(n2 - n1);
+
+   <span class="key">if </span>(!n1) { <span class="com">/* no XMLNSURI at all: */</span>
+     n1 = ((*a1-&gt;uri) != <span class="num">0</span>);
+      n2 = ((*a2-&gt;uri) != <span class="num">0</span>);
+
+      <span class="key">if </span>(n1 != n2) <span class="com">/* other one has uri, it will be last: */</span>
+        <span class="key">return </span>(n1 - n2);
+      <span class="key">else if </span>(n1) <span class="com">/* both have uris, compare them: */</span>
+        <span class="key">return </span>strcmp((<span class="typ">const </span>XMLCH*)a1-&gt;uri, (<span class="typ">const </span>XMLCH*)a2-&gt;uri);
+    }
+    <span class="com">/* both have XMLNSURI or are normal attribs, compare qnames: */</span>
+    <span class="key">return </span>strcmp((<span class="typ">const </span>XMLCH*)a1-&gt;qname, (<span class="typ">const </span>XMLCH*)a2-&gt;qname);
+}
+
+<span class="typ">int </span>main(<span class="typ">int </span>argc, <span class="typ">char</span>* argv[])
+{
+  CANONXMLPARSER cxmlparser; <span class="com">/* UserData struct */</span>
+  LPXMLPARSER parser;
+  <span class="typ">FILE </span>*f;
+  <span class="typ">int </span>ret;
+
+  <span class="key">if </span>(argc &lt; <span class="num">3 </span>|| argc &gt; <span class="num">4</span>) {
+    printf(<span class="str">&quot;Usage: canonxml infile.xml outfile.xml optionalbasedir/</span><span class="esc">\n</span><span class="str">&quot;</span>);
+    <span class="key">return </span><span class="num">-1</span>;
+  }
+
+  <span class="key">if </span>(argc == <span class="num">4</span>)
+    strcpy(cxmlparser.xmlbase, argv[<span class="num">3</span>]);
+  <span class="key">else
+    </span>*(cxmlparser.xmlbase) = <span class="str">'</span><span class="esc">\0</span><span class="str">'</span>;
+
+  <span class="key">if </span>(!XMLParser_Create(&amp;parser)) {
+    printf(<span class="str">&quot;Error creating parser in main()</span><span class="esc">\n</span><span class="str">&quot;</span>);
+    <span class="key">return </span><span class="num">-1</span>;
+  }
+
+  parser-&gt;UserData = &amp;cxmlparser;
+  parser-&gt;startElementHandler = StartElement;
+  parser-&gt;endElementHandler = EndElement;
+  parser-&gt;charactersHandler = parser-&gt;ignorableWhitespaceHandler = EscCharacters;
+  parser-&gt;startCDATAHandler = DummyEvent;
+  parser-&gt;notationDeclHandler = NotationDecl;
+  parser-&gt;startDTDHandler = StartDTDforNotationDecl;
+  parser-&gt;endDTDHandler = EndDTDforNotationDecl;
+  parser-&gt;processingInstructionHandler = Pi;
+  parser-&gt;resolveEntityHandler = ResolveEntity;
+  parser-&gt;externalEntityParsedHandler = FreeInputData;
+  <span class="com">/*
+  parser-&gt;commentHandler = Comment;
+  parser-&gt;errorHandler = ErrorHandler;
+  parser-&gt;defaultHandler = Characters;
+  parser-&gt;startDTDHandler = StartDTD;
+  parser-&gt;endDTDHandler = EndDTD;
+  */</span>
+  cxmlparser.hasIntSubset = <span class="num">0</span>;
+
+  <span class="key">if </span>(!(f = fopen(argv[<span class="num">1</span>], <span class="str">&quot;rb&quot;</span>))) {
+    printf(<span class="str">&quot;Error opening file %s</span><span class="esc">\n</span><span class="str">&quot;</span>, argv[<span class="num">1</span>]);
+    <span class="key">return </span><span class="num">-1</span>;
+  }
+
+  <span class="key">if </span>(!(cxmlparser.pfout = fopen(argv[<span class="num">2</span>], <span class="str">&quot;wb&quot;</span>))) {
+    printf(<span class="str">&quot;Error opening file %s</span><span class="esc">\n</span><span class="str">&quot;</span>, argv[<span class="num">2</span>]);
+    <span class="key">return </span><span class="num">-1</span>;
+  }
+
+  _XMLParser_SetFlag(parser, XMLFLAG_NAMESPACE_PREFIXES, <span class="num">1</span>);
+
+  XMLParser_Parse(parser, cstream, f, NULL);
+
+  ret = (parser-&gt;ErrorCode != ERR_XMLP_ABORT) ? parser-&gt;ErrorCode : <span class="num">-1</span>;
+  fclose(f);
+  fclose(cxmlparser.pfout);
+  XMLParser_Free(parser);
+  <span class="key">return </span>ret;
+}
+
+</pre>
+</body>
+</html>
+<!--HTML generated by highlight 2.0-17, http://www.andre-simon.de/-->

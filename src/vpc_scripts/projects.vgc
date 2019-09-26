@@ -1,0 +1,460 @@
+//-----------------------------------------------------------------------------
+//	PROJECTS.VGC
+//
+//	Project Configurations for all Source(TM) Projects
+//-----------------------------------------------------------------------------
+
+/////////////////////////
+// Project definitions //
+/////////////////////////
+
+$Include "utils\dx_proxy\dx_proxy_all.vgc"
+
+$Project "actbusy"
+{
+	"tools\actbusy\actbusy.vpc" [$WIN32]
+}
+
+$Project "AdminServer"
+{
+	"Tracker\AdminServer\AdminServer.vpc" [$WIN32]
+}
+
+$Project "appframework"
+{
+	"appframework\appframework.vpc" 	[$WIN32]
+}
+
+$Project "bitmap"
+{
+	"bitmap\bitmap.vpc" [$WIN32]
+}
+
+$Project "bsppack"
+{
+	"utils\bsppack\bsppack.vpc" [$WIN32]
+}
+
+$Project "bspzip"
+{
+	"utils\bspzip\bspzip.vpc" [$WIN32]
+}
+
+$Project "bzip2"
+{
+	"utils\bzip2\bzip2.vpc" [$WIN32]
+}
+
+$Project "captioncompiler"
+{
+	"utils\captioncompiler\captioncompiler.vpc" [$WIN32]
+}
+
+$Project "choreoobjects"
+{
+	"choreoobjects\choreoobjects.vpc" [$WIN32]
+}
+
+$Project "client"
+{
+	"game\client\client_hl2.vpc"		[($WIN32) && $HL2]
+	"game\client\client_episodic.vpc"	[($WIN32) && $EPISODIC]
+	"game\client\client_hl2mp.vpc"		[($WIN32) && $HL2MP]
+}
+
+$Project "commedit"
+{
+	"tools\commedit\commedit.vpc" [$WIN32]
+}
+
+$Project "datacache"
+{
+	"datacache\datacache.vpc" [$WIN32]
+}
+
+$Project "datamodel"
+{
+	"datamodel\datamodel.vpc" [$WIN32]
+}
+
+$Project "dedicated"
+{
+	"dedicated\dedicated.vpc" [$WIN32]
+}
+
+$Project "dedicated_main"
+{
+	"dedicated_main\dedicated_main.vpc" [$WIN32]
+}
+
+$Project "dme_controls"
+{
+	"vgui2\dme_controls\dme_controls.vpc" [$WIN32]
+}
+
+$Project "dmserializers"
+{
+	"dmserializers\dmserializers.vpc" [$WIN32]
+}
+
+$Project "dmxconvert"
+{
+	"utils\dmxconvert\dmxconvert.vpc" [$WIN32]
+}
+
+$Project "dmxedit"
+{
+	"utils\dmxedit\dmxedit.vpc" [$WIN32]
+}
+
+$Project "dmxloader"
+{
+	"dmxloader\dmxloader.vpc" [$WIN32]
+}
+
+$Project "engine"
+{
+	"engine\engine.vpc" [$WIN32]
+}
+
+$Project "fgdlib"
+{
+	"fgdlib\fgdlib.vpc" [$WIN32]
+}
+
+$Project "FileSystemOpenDialog"
+{
+	"utils\FileSystemOpenDialog\FileSystemOpenDialog.vpc" [$WIN32]
+}
+
+$Project "filesystem_stdio"
+{
+	"filesystem\filesystem_stdio.vpc" [$WIN32]
+}
+
+$Project "GameUI"
+{
+	"game\gameui\GameUI.vpc" [$WIN32||$POSIX]
+}
+
+$Project "havana_constraints"
+{
+	"ivp\havana\havana_constraints.vpc" [$WIN32]
+}
+
+$Project "hk_base"
+{
+	"ivp\havana\havok\hk_base\hk_base.vpc" [$WIN32]
+}
+
+$Project "hk_math"
+{
+	"ivp\havana\havok\hk_math\hk_math.vpc" [$WIN32]
+}
+
+$Project "Particles"
+{
+	"particles\particles.vpc" [$WIN32]
+}
+
+$Project "server"
+{
+	"game\server\server_hl2.vpc"		[($WIN32) && $HL2]
+	"game\server\server_episodic.vpc"	[($WIN32) && $EPISODIC]
+	"game\server\server_hl2mp.vpc"		[($WIN32) && $HL2MP]
+}
+
+$Project "inputsystem"
+{
+	"inputsystem\inputsystem.vpc" [$WIN32]
+}
+
+$Project "ivp_compactbuilder"
+{
+	"ivp\ivp_compact_builder\ivp_compactbuilder.vpc" [$WIN32]
+}
+
+$Project "ivp_physics"
+{
+	"ivp\ivp_physics\ivp_physics.vpc" [$WIN32]
+}
+
+$Project "jpeglib"
+{
+	"utils\jpeglib\jpeglib.vpc" [$WIN32]
+}
+
+$Project "launcher"
+{
+	"launcher\launcher.vpc" [$WIN32]
+}
+
+$Project "launcher_main"
+{
+	"launcher_main\launcher_main.vpc" [$WIN32]
+}
+
+$Project "lua"
+{
+	"lua\lua.vpc" [$WIN32]
+}
+
+$Project "lzma"
+{
+	"utils\lzma\lzma.vpc" [$WIN32]
+}
+
+$Project "materialsystem"
+{
+	"materialsystem\materialsystem.vpc" [$WIN32]
+}
+
+$Project "mathlib"
+{
+	"mathlib\mathlib.vpc" [$WIN32]
+}
+
+$Project "matsys_controls"
+{
+	"vgui2\matsys_controls\matsys_controls.vpc" [$WIN32]
+}
+
+$Project "movieobjects"
+{
+	"movieobjects\movieobjects.vpc" [$WIN32]
+}
+
+$Project "mxtoolkitwin32"
+{
+	"utils\mxtk\mxtoolkitwin32.vpc" [$WIN32]
+}
+
+$Project "networksystem"
+{
+	"networksystem\networksystem.vpc" [$WIN32]
+}
+
+$Project "nvtristriplib"
+{
+	"utils\nvtristriplib\nvtristriplib.vpc" [$WIN32]
+}
+
+$Project "mdllib"
+{
+	"mdllib\mdllib.vpc" [$WIN32]
+}
+
+$Project "parsifal"
+{
+	"libparsifal-0.8.3\win32\vc6\parsifal.vpc" [$WIN32]
+}
+
+$Project "pcffix"
+{
+	"utils\pcffix\pcffix.vpc" [$WIN32]
+}
+
+$Project "pet"
+{
+	"tools\pet\pet.vpc" [$WIN32]
+}
+
+$Project "phonemeextractor"
+{
+	"utils\phonemeextractor\phonemeextractor.vpc" [$WIN32]
+}
+
+$Project "phonemeextractor_ims"
+{
+	"utils\phonemeextractor\phonemeextractor_ims.vpc" [$WIN32]
+}
+
+$Project "raytrace"
+{
+	"raytrace\raytrace.vpc" [$WIN32]
+}
+
+$Project "scenefilecache"
+{
+	"scenefilecache\scenefilecache.vpc" [$WIN32]
+}
+
+$Project "scenemanager"
+{
+	"utils\scenemanager\scenemanager.vpc" [$WIN32]
+}
+
+$Project "ServerBrowser"
+{
+	"ServerBrowser\ServerBrowser.vpc" [$WIN32]
+}
+
+$Project "sfmobjects"
+{
+	"sfmobjects\sfmobjects.vpc" [$WIN32]
+}
+
+$Project "shaderapidx9"
+{
+	"materialsystem\shaderapidx9\shaderapidx9.vpc" [$WIN32]
+}
+
+$Project "shaderapiempty"
+{
+	"materialsystem\shaderapiempty\shaderapiempty.vpc" [$WIN32]
+}
+
+$Project "shaderlib"
+{
+	"materialsystem\shaderlib\shaderlib.vpc" [$WIN32]
+}
+
+$Project "soundemittersystem"
+{
+	"soundemittersystem\soundemittersystem.vpc" [$WIN32]
+}
+
+$Project "soundsystem"
+{
+	"soundsystem\soundsystem.vpc" [$WIN32]
+}
+
+$Project "speex"
+{
+	"engine\voice_codecs\speex\speex.vpc" [$WIN32]
+}
+
+$Project "sqlwrapper"
+{
+	"utils\sqlwrapper\sqlwrapper.vpc" [$WIN32]
+}
+
+$Project "stdshader_dbg"
+{
+	"materialsystem\stdshaders\stdshader_dbg.vpc" [$WIN32]
+}
+
+$Project "stdshader_dx8"
+{
+	"materialsystem\stdshaders\stdshader_dx8.vpc" [$WIN32]
+}
+
+$Project "stdshader_dx9"
+{
+	"materialsystem\stdshaders\stdshader_dx9.vpc" [$WIN32]
+}
+
+$Project "studiomdl"
+{
+	"utils\studiomdl\studiomdl.vpc" [$WIN32]
+}
+
+$Project "studiorender"
+{
+	"studiorender\studiorender.vpc" [$WIN32]
+}
+
+$Project "tier0"
+{
+	"tier0\tier0.vpc" 	[$WIN32 || $X360]
+}
+
+$Project "tier1"
+{
+	"tier1\tier1.vpc" 	[$WIN32 || $X360]
+}
+
+$Project "tier2"
+{
+	"tier2\tier2.vpc" 	[$WIN32]
+}
+
+$Project "tier3"
+{
+	"tier3\tier3.vpc" 	[$WIN32]
+}
+
+$Project "toolutils"
+{
+	"tools\toolutils\toolutils.vpc" [$WIN32]
+}
+
+$Project "traceperf"
+{
+	"vphysics\traceperf\traceperf.vpc"
+}
+
+$Project "unicode"
+{
+	"unicode\unicode.vpc" [$WIN32]
+}
+
+$Project "unitlib"
+{
+	"unitlib\unitlib.vpc" [$WIN32]
+}
+
+$Project "valve_avi"
+{
+	"avi\valve_avi.vpc" [$WIN32]
+}
+
+$Project "vaudio_miles"
+{
+	"engine\voice_codecs\miles\vaudio_miles.vpc" [$WIN32]
+}
+
+$Project "vaudio_speex"
+{
+	"engine\voice_codecs\speex\speex.vpc" [$WIN32]
+}
+
+$Project "vaudio_speexfull"
+{
+	"engine\voice_codecs\speex\speex_full.vpc" [$WIN32]
+}
+
+$Project "vguimatsurface"
+{
+	"vguimatsurface\vguimatsurface.vpc" [$WIN32]
+}
+
+$Project "vgui_controls"
+{
+	"vgui2\vgui_controls\vgui_controls.vpc" [$WIN32]
+}
+
+$Project "vgui_dll"
+{
+	"vgui2\src\vgui_dll.vpc" [$WIN32]
+}
+
+$Project "vgui_surfacelib"
+{
+	"vgui2\vgui_surfacelib\vgui_surfacelib.vpc" [$WIN32]
+}
+
+$Project "vmt"
+{
+	"tools\vmt\vmt.vpc" [$WIN32]
+}
+
+$Project "vphysics"
+{
+	"vphysics\vphysics.vpc"  [$WIN32]
+}
+
+$Project "vstdlib"
+{
+	"vstdlib\vstdlib.vpc"		[$WIN32 || $X360]
+}
+
+$Project "vtex_dll"
+{
+	"utils\vtex\vtex_dll.vpc" [$WIN32]
+}
+
+$Project "vtf"
+{
+	"vtf\vtf.vpc" [$WIN32]
+}

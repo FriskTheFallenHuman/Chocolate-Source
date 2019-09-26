@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>samples\zenstory\zenstory.c</title>
+	<link rel="stylesheet" type="text/css" href="highlight.css">
+</head>
+<body>
+<pre><span class="dir">#include &lt;stdio.h&gt;
+</span><span class="dir">#include &lt;string.h&gt;
+</span><span class="dir">#include &lt;stdlib.h&gt;
+</span><span class="dir">#include </span><span class="dstr">&quot;libparsifal/parsifal.h&quot;</span><span class="dir">
+</span><span class="dir">#include </span><span class="dstr">&quot;zenstory.h&quot;</span><span class="dir">
+</span>
+<span class="typ">int </span>StartElement(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *uri, <span class="typ">const </span>XMLCH *localName, <span class="typ">const </span>XMLCH *qName, LPXMLVECTOR atts)
+{
+  STORYPARSER *parser = (STORYPARSER*)UserData;
+
+  <span class="key">if </span>(parser-&gt;inMixedContent) {
+    parser-&gt;inMixedContent++;
+    <span class="com">/* could call mixed content legal tag check routine here e.g.
+    if (!isvalidmixedcontenttag(qName, parser-&gt;state)) return sin(); */</span>
+    <span class="key">return </span>XML_OK;
+  }
+  <span class="key">else </span>{
+    <span class="typ">int </span>*pstate = STACK_PEEK(parser-&gt;stateStack);
+    parser-&gt;state = (pstate) ? *pstate : NONE;
+  }
+
+  <span class="key">if </span>(parser-&gt;state == NONE &amp;&amp; !strcmp(qName, <span class="str">&quot;stories&quot;</span>)) {
+    parser-&gt;state = STORIES; <span class="com">/* set initial state (root element) */</span>
+  }
+  <span class="key">else if </span>(parser-&gt;state == STORIES &amp;&amp; !strcmp(qName, <span class="str">&quot;story&quot;</span>)) {
+    <span class="com">/* initialize new story: */</span>
+    parser-&gt;curStory = XMLVector_Append(parser-&gt;stories, NULL);
+    ASSERT_MEM_ABORT(parser-&gt;curStory);
+    parser-&gt;curStory-&gt;title = (<span class="typ">char</span>*)NULL;
+    parser-&gt;curStory-&gt;author = (<span class="typ">char</span>*)NULL;
+    parser-&gt;curStory-&gt;body = (<span class="typ">char</span>*)NULL;
+    parser-&gt;state = STORY;
+  }
+  <span class="com">/* these would normally be done with a little more short circuiting: */</span>
+  <span class="key">else if </span>(parser-&gt;state == STORY &amp;&amp; !strcmp(qName, <span class="str">&quot;title&quot;</span>)) {
+    parser-&gt;inContent++; <span class="com">/* STORY_TITLE tag allows normal content */</span>
+    parser-&gt;state = STORY_TITLE;
+  }
+  <span class="key">else if </span>(parser-&gt;state == STORY &amp;&amp; !strcmp(qName, <span class="str">&quot;author&quot;</span>)) {
+    parser-&gt;inContent++; <span class="com">/* STORY_AUTHOR tag allows normal content */</span>
+    parser-&gt;state = STORY_AUTHOR;
+  }
+  <span class="key">else if </span>(parser-&gt;state == STORY &amp;&amp; !strcmp(qName, <span class="str">&quot;body&quot;</span>)) {
+    parser-&gt;inMixedContent++; <span class="com">/* STORY_BODY tag allows mixed content */</span>
+    parser-&gt;state = STORY_BODY;
+  }
+  <span class="key">else </span>{
+    printf(<span class="str">&quot;Unexpected tag: %s</span><span class="esc">\n</span><span class="str">File is not in zen story format!</span><span class="esc">\n</span><span class="str">&quot;</span>, qName);
+    <span class="key">return </span>XML_ABORT;
+  }
+  <span class="com">/* push the new state: */</span>
+  ASSERT_MEM_ABORT(STACK_PUSH(parser-&gt;stateStack, &amp;parser-&gt;state));
+  <span class="key">return </span>XML_OK;
+}
+
+<span class="typ">int </span>EndElement(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *uri, <span class="typ">const </span>XMLCH *localName, <span class="typ">const </span>XMLCH *qName)
+{
+  STORYPARSER *parser = (STORYPARSER*)UserData;
+
+  <span class="key">if </span>(parser-&gt;inContent)
+    parser-&gt;inContent = <span class="num">0</span>;
+  <span class="key">else if </span>(parser-&gt;inMixedContent) {
+    <span class="com">/* if this is last mixed content tag (the tag
+    that put us in mixed content), we POP the state,
+    otherwise we just decrement the counter and return OK: */</span>
+    <span class="key">if </span>((--parser-&gt;inMixedContent) &gt; <span class="num">0</span>) <span class="key">return </span>XML_OK;
+  }
+
+  <span class="key">if </span>(STACK_POP(parser-&gt;stateStack, &amp;parser-&gt;state)) {
+    <span class="com">/* test the endTag here by popping and testing parser-&gt;state
+    (which is the state that is ending) */</span>
+    XMLCH *s = (XMLCH*)NULL;
+
+    <span class="key">switch</span>(parser-&gt;state) {
+      <span class="key">case </span>STORY_TITLE: <span class="com">/* you should check duplicate title etc. here */</span>
+        s = strdup(XMLStringbuf_ToString(&amp;parser-&gt;textBuf));
+        ASSERT_MEM_ABORT(s);
+        parser-&gt;curStory-&gt;title = s;
+        <span class="key">break</span>;
+      <span class="key">case </span>STORY_AUTHOR:
+        s = strdup(XMLStringbuf_ToString(&amp;parser-&gt;textBuf));
+        ASSERT_MEM_ABORT(s);
+        parser-&gt;curStory-&gt;author = s;
+        <span class="key">break</span>;
+      <span class="key">case </span>STORY_BODY:
+        s = strdup(XMLStringbuf_ToString(&amp;parser-&gt;textBuf));
+        ASSERT_MEM_ABORT(s);
+        parser-&gt;curStory-&gt;body = s;
+        <span class="key">break</span>;
+    }
+    <span class="key">if </span>(s) {
+      <span class="com">/* normalize buffer, note that XMLNormalizeBuf doesn't nul terminate the
+      buffer: */</span>
+      <span class="typ">int </span>len = XMLNormalizeBuf(s, parser-&gt;textBuf.len);
+      <span class="key">if </span>(len &lt; parser-&gt;textBuf.len) s[len] = <span class="str">'</span><span class="esc">\0</span><span class="str">'</span>;
+      <span class="com">/* we'll reuse Stringbuf just setting its length to 0: */</span>
+      ASSERT_MEM_ABORT(XMLStringbuf_SetLength(&amp;parser-&gt;textBuf, <span class="num">0</span>));
+    }
+  }
+  <span class="key">return </span>XML_OK;
+}
+
+<span class="typ">int </span>Characters(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *Chars, <span class="typ">int </span>cbChars)
+{
+  STORYPARSER *parser = (STORYPARSER*)UserData;
+
+  <span class="key">if </span>(parser-&gt;inContent || parser-&gt;inMixedContent) {
+    <span class="com">/* if either inContent or inMixedContent is set,
+       append data into Stringbuf: */</span>
+    ASSERT_MEM_ABORT(XMLStringbuf_Append(&amp;parser-&gt;textBuf,
+      (XMLCH*)Chars, cbChars));
+  }
+  <span class="key">else </span>{
+    <span class="com">/* this tag cannot contain character data: */</span>
+    puts(<span class="str">&quot;Character data was not expected here!&quot;</span>);
+    <span class="key">return </span>XML_ABORT;
+  }
+  <span class="key">return </span>XML_OK;
+}
+
+<span class="typ">void </span>ErrorHandler(LPXMLPARSER parser)
+{
+  <span class="key">if </span>(parser-&gt;ErrorCode != ERR_XMLP_ABORT)
+    printf(<span class="str">&quot;Parsing error: %s</span><span class="esc">\n</span><span class="str">&quot;</span>, parser-&gt;ErrorString);
+  printf(<span class="str">&quot;ErrorLine: %d ErrorColumn: %d</span><span class="esc">\n</span><span class="str">&quot;</span>, parser-&gt;ErrorLine, parser-&gt;ErrorColumn);
+}
+
+<span class="typ">int </span>cstream(BYTE *buf, <span class="typ">int </span>cBytes, <span class="typ">int </span>*cBytesActual, <span class="typ">void </span>*inputData)
+{
+  *cBytesActual = fread(buf, <span class="num">1</span>, cBytes, (<span class="typ">FILE</span>*)inputData);
+  <span class="key">return </span>(*cBytesActual &lt; cBytes);
+}
+
+<span class="typ">int </span>main(<span class="typ">int </span>argc, <span class="typ">char</span>* argv[])
+{
+  STORYPARSER sparser;
+  LPXMLPARSER parser;
+
+  <span class="key">if </span>(!XMLParser_Create(&amp;parser)) {
+    puts(<span class="str">&quot;Error creating parser!&quot;</span>);
+    <span class="key">return </span><span class="num">1</span>;
+  }
+
+  <span class="key">if </span>(!XMLVector_Create(&amp;sparser.stateStack, <span class="num">6</span>, <span class="key">sizeof</span>(<span class="typ">int</span>))) {
+    puts(<span class="str">&quot;Error creating stateStack in main()&quot;</span>);
+    <span class="key">return </span><span class="num">1</span>;
+  }
+
+  <span class="key">if </span>(!XMLVector_Create(&amp;sparser.stories, <span class="num">6</span>, <span class="key">sizeof</span>(ZENSTORY))) {
+    puts(<span class="str">&quot;Error creating stories vector in main()&quot;</span>);
+    <span class="key">return </span><span class="num">1</span>;
+  }
+
+  <span class="com">/* init Stringbuf: blockSize 256, no pre-allocation: */</span>
+  XMLStringbuf_Init(&amp;sparser.textBuf, <span class="num">256</span>, <span class="num">0</span>);
+
+  sparser.parser = parser;
+  sparser.inMixedContent = sparser.inContent = <span class="num">0</span>;
+  parser-&gt;UserData = &amp;sparser;
+
+  parser-&gt;errorHandler = ErrorHandler;
+  parser-&gt;startElementHandler = StartElement;
+  parser-&gt;endElementHandler = EndElement;
+  parser-&gt;charactersHandler = Characters;
+
+  <span class="key">if </span>(XMLParser_Parse(parser, cstream, stdin, <span class="num">0</span>)) {
+
+    <span class="com">/* present the stories (we'll free the strings in the same loop) : */</span>
+    <span class="typ">int </span>i;
+    ZENSTORY *story;
+    <span class="key">for </span>(i=<span class="num">0</span>; i&lt;sparser.stories-&gt;length; i++) {
+      story = XMLVector_Get(sparser.stories, i);
+      <span class="key">if </span>(story) {
+        <span class="key">if </span>(story-&gt;title) {
+          printf(<span class="str">&quot;title: %s</span><span class="esc">\n</span><span class="str">&quot;</span>, story-&gt;title);
+          free(story-&gt;title);
+        }
+        <span class="key">if </span>(story-&gt;author) {
+          printf(<span class="str">&quot;author: %s</span><span class="esc">\n</span><span class="str">&quot;</span>, story-&gt;author);
+          free(story-&gt;author);
+        }
+        <span class="key">if </span>(story-&gt;body) {
+          printf(<span class="str">&quot;story: %s</span><span class="esc">\n</span><span class="str">&quot;</span>,story-&gt;body);
+          free(story-&gt;body);
+        }
+      }
+    }
+  }
+
+  XMLParser_Free(parser);
+  XMLStringbuf_Free(&amp;sparser.textBuf);
+  XMLVector_Free(sparser.stories);
+  XMLVector_Free(sparser.stateStack);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+</pre>
+</body>
+</html>
+<!--HTML generated by highlight 2.0-17, http://www.andre-simon.de/-->

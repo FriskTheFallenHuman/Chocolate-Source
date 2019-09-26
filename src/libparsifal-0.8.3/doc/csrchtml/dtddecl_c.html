@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>samples\dtddecl\dtddecl.c</title>
+	<link rel="stylesheet" type="text/css" href="highlight.css">
+</head>
+<body>
+<pre><span class="dir">#define PFOUT stdout
+</span>
+<span class="typ">int </span>AttributeDecl(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *eName,
+  <span class="typ">const </span>XMLCH *aName, <span class="typ">int </span>type, <span class="typ">const </span>XMLCH *typeStr, <span class="typ">int </span>valueDef,
+  <span class="typ">const </span>XMLCH *def)
+{
+  fprintf(PFOUT, <span class="str">&quot;&lt;!ATTLIST %s %s &quot;</span>, eName, aName);
+  <span class="key">switch</span>(type) {
+    <span class="key">case </span>XMLATTDECL_TYPE_CDATA: fputs(<span class="str">&quot;CDATA&quot;</span>, PFOUT); <span class="key">break</span>;
+    <span class="key">case </span>XMLATTDECL_TYPE_ID: fputs(<span class="str">&quot;ID&quot;</span>, PFOUT); <span class="key">break</span>;
+    <span class="key">case </span>XMLATTDECL_TYPE_IDREF: fputs(<span class="str">&quot;IDREF&quot;</span>, PFOUT); <span class="key">break</span>;
+    <span class="key">case </span>XMLATTDECL_TYPE_IDREFS: fputs(<span class="str">&quot;IDREFS&quot;</span>, PFOUT); <span class="key">break</span>;
+    <span class="key">case </span>XMLATTDECL_TYPE_ENTITY: fputs(<span class="str">&quot;ENTITY&quot;</span>, PFOUT); <span class="key">break</span>;
+    <span class="key">case </span>XMLATTDECL_TYPE_ENTITIES: fputs(<span class="str">&quot;ENTITIES&quot;</span>, PFOUT); <span class="key">break</span>;
+    <span class="key">case </span>XMLATTDECL_TYPE_NMTOKEN: fputs(<span class="str">&quot;NMTOKEN&quot;</span>, PFOUT); <span class="key">break</span>;
+    <span class="key">case </span>XMLATTDECL_TYPE_NMTOKENS: fputs(<span class="str">&quot;NMTOKENS&quot;</span>, PFOUT); <span class="key">break</span>;
+    <span class="key">case </span>XMLATTDECL_TYPE_NOTATION: fputs(<span class="str">&quot;NOTATION &quot;</span>, PFOUT); <span class="com">/* fall through */</span>
+    <span class="key">case </span>XMLATTDECL_TYPE_ENUMERATED: fputs(typeStr, PFOUT); <span class="key">break</span>;
+  }
+  <span class="key">switch</span>(valueDef) {
+    <span class="key">case </span>XMLATTDECL_DEF_FIXED: fputs(<span class="str">&quot; #FIXED&quot;</span>, PFOUT); <span class="key">break</span>;
+    <span class="key">case </span>XMLATTDECL_DEF_REQUIRED: fputs(<span class="str">&quot; #REQUIRED&quot;</span>, PFOUT); <span class="key">break</span>;
+    <span class="key">case </span>XMLATTDECL_DEF_IMPLIED: fputs(<span class="str">&quot; #IMPLIED&quot;</span>, PFOUT); <span class="key">break</span>;
+  }
+
+  <span class="key">if </span>(def) fprintf(PFOUT, <span class="str">&quot; </span><span class="esc">\&quot;</span><span class="str">%s</span><span class="esc">\&quot;</span><span class="str">&gt;</span><span class="esc">\n</span><span class="str">&quot;</span>, def);
+  <span class="key">else </span>fputs(<span class="str">&quot;&gt;</span><span class="esc">\n</span><span class="str">&quot;</span>, PFOUT);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>ElementDecl(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *name, <span class="typ">void </span>*contentModel)
+{
+  fprintf(PFOUT, <span class="str">&quot;&lt;!ELEMENT %s %s&gt;</span><span class="esc">\n</span><span class="str">&quot;</span>, name, (XMLCH*)contentModel);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>EntityDecl(<span class="typ">void </span>*UserData, LPXMLENTITY entity)
+{
+  fputs(<span class="str">&quot;&lt;!ENTITY &quot;</span>, PFOUT);
+  <span class="key">if </span>(entity-&gt;type == XML_ENTITY_INT_PARAM || entity-&gt;type == XML_ENTITY_EXT_PARAM)
+    fprintf(PFOUT, <span class="str">&quot;%% %s&quot;</span>, entity-&gt;name+<span class="num">1</span>);
+  <span class="key">else
+    </span>fputs(entity-&gt;name, PFOUT);
+
+  <span class="key">if </span>(entity-&gt;value)
+    fprintf(PFOUT, <span class="str">&quot; </span><span class="esc">\&quot;</span><span class="str">%s</span><span class="esc">\&quot;</span><span class="str">&gt;</span><span class="esc">\n</span><span class="str">&quot;</span>, entity-&gt;value);
+  <span class="key">else </span>{
+    <span class="key">if </span>(entity-&gt;publicID) fprintf(PFOUT, <span class="str">&quot; PUBLIC </span><span class="esc">\&quot;</span><span class="str">%s</span><span class="esc">\&quot; \&quot;</span><span class="str">%s</span><span class="esc">\&quot;</span><span class="str">&quot;</span>, entity-&gt;publicID, entity-&gt;systemID);
+    <span class="key">else </span>fprintf(PFOUT, <span class="str">&quot; SYSTEM </span><span class="esc">\&quot;</span><span class="str">%s</span><span class="esc">\&quot;</span><span class="str">&quot;</span>, entity-&gt;systemID);
+
+    <span class="key">if </span>(entity-&gt;notation) fprintf(PFOUT, <span class="str">&quot; NDATA %s&gt;</span><span class="esc">\n</span><span class="str">&quot;</span>, entity-&gt;notation);
+    <span class="key">else </span>fputs(<span class="str">&quot;&gt;</span><span class="esc">\n</span><span class="str">&quot;</span>, PFOUT);
+  }
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>NotationDecl(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *name, <span class="typ">const </span>XMLCH *publicID, <span class="typ">const </span>XMLCH *systemID)
+{
+  fprintf(PFOUT, <span class="str">&quot;&lt;!NOTATION %s &quot;</span>, name);
+  <span class="key">if </span>(publicID) fprintf(PFOUT, <span class="str">&quot;PUBLIC </span><span class="esc">\&quot;</span><span class="str">%s</span><span class="esc">\&quot;</span><span class="str">&quot;</span>, publicID);
+  <span class="key">else </span>fputs(<span class="str">&quot;SYSTEM&quot;</span>, PFOUT);
+
+  <span class="key">if </span>(systemID) fprintf(PFOUT, <span class="str">&quot; </span><span class="esc">\&quot;</span><span class="str">%s</span><span class="esc">\&quot;</span><span class="str">&gt;</span><span class="esc">\n</span><span class="str">&quot;</span>, systemID);
+  <span class="key">else </span>fputs(<span class="str">&quot;&gt;</span><span class="esc">\n</span><span class="str">&quot;</span>, PFOUT);
+  <span class="key">return </span><span class="num">0</span>;
+}
+</pre>
+</body>
+</html>
+<!--HTML generated by highlight 2.0-17, http://www.andre-simon.de/-->

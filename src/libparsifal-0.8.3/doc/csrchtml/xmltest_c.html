@@ -1,0 +1,517 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>samples\xmltest\xmltest.c</title>
+	<link rel="stylesheet" type="text/css" href="highlight.css">
+</head>
+<body>
+<pre><span class="dir">#include &lt;stdio.h&gt;
+</span><span class="dir">#include &lt;stdlib.h&gt;
+</span><span class="dir">#include &lt;string.h&gt;
+</span><span class="dir">#include </span><span class="dstr">&quot;libparsifal/parsifal.h&quot;</span><span class="dir">
+</span>
+<span class="dir">#define MAKE_DIFFGRAM 1
+</span>
+<span class="dir">#ifdef _MSC_VER
+</span>  <span class="dir">#ifdef _DEBUG
+</span>    <span class="dir">#include &lt;crtdbg.h&gt;
+</span>    <span class="dir">#define _CRTDBG_MAP_ALLOC
+</span>  <span class="dir">#endif
+</span><span class="dir">#endif
+</span>
+<span class="dir">#define OUTDIR </span><span class="dstr">&quot;pxpout/&quot;</span><span class="dir">
+</span>
+<span class="com">/* stack macros (from xmldef.h) */</span>
+<span class="dir">#define STACK_PUSH(stack,item) (XMLVector_Append((stack), (item)))
+</span><span class="dir">#define STACK_PEEK(stack) (XMLVector_Get((stack),(stack)-&gt;length-1))
+</span><span class="dir">#define STACK_REMOVE(stack) (XMLVector_Remove((stack), (stack)-&gt;length-1))
+</span><span class="dir">#define STACK_POP(stack,item) \
+( ((stack)-&gt;length) ? (memcpy((item), STACK_PEEK((stack)), (stack)-&gt;itemSize), \
+STACK_REMOVE((stack)), (item)) : NULL)
+</span>
+<span class="dir">#define EMPTY_COLS(num, pfile) { int i; for (i=0; i&lt;(num); i++) fputs(</span><span class="dstr">&quot;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&quot;</span><span class="dir">, (pfile)); }
+</span>
+<span class="dir">#ifndef MAX_PATH
+</span><span class="dir">#define MAX_PATH 256
+</span><span class="dir">#endif
+</span>
+<span class="typ">enum </span>tagSTATES { NONE, TESTSUITE, TESTCASES, TEST } STATES;
+
+<span class="dir">#define PFOUT (((XMLCONFPARSER*)UserData)-&gt;pfout)
+</span><span class="dir">#define PFERR stdout
+</span>
+<span class="key">typedef </span><span class="typ">struct </span>tagXMLCONFPARSER {
+  LPXMLPARSER parser;
+  LPXMLVECTOR stateStack;
+  <span class="typ">int </span>state;
+  <span class="typ">int </span>inMixedContent;
+  <span class="com">/* these are xmlconf specific: */</span>
+  LPXMLPARSER runParser;
+  <span class="typ">int </span>testCount;
+  <span class="typ">int </span>testSuccess;
+  <span class="typ">FILE </span>*pfout, *pffailed;
+} XMLCONFPARSER;
+
+<span class="key">typedef </span><span class="typ">struct </span>tagRUNPARSERDATA {
+  XMLCH systemID[MAX_PATH];
+  XMLCH testbasedir[MAX_PATH];
+  XMLCH intEnt[MAX_PATH];
+} RUNPARSERDATA;
+
+<span class="com">/* common routines: */</span>
+<span class="typ">int </span>cstream(BYTE *buf, <span class="typ">int </span>cBytes, <span class="typ">int </span>*cBytesActual, <span class="typ">void </span>*inputData);
+<span class="typ">int </span>FreeInputData(<span class="typ">void </span>*UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader);
+
+<span class="com">/* TESTSUITE PARSER: */</span>
+<span class="typ">void </span>PrintEsc(<span class="typ">FILE </span>*fp, <span class="typ">const </span>XMLCH *str, <span class="typ">int </span>len);
+<span class="typ">int </span>StartElement(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *uri, <span class="typ">const </span>XMLCH *localName, <span class="typ">const </span>XMLCH *qName, LPXMLVECTOR atts);
+<span class="typ">int </span>EndElement(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *uri, <span class="typ">const </span>XMLCH *localName, <span class="typ">const </span>XMLCH *qName);
+<span class="typ">int </span>Characters(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *Chars, <span class="typ">int </span>cbChars);
+<span class="typ">void </span>ErrorHandler(LPXMLPARSER parser);
+<span class="typ">int </span>ResolveEntity(<span class="typ">void </span>*UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader);
+
+<span class="com">/* RUNTEST PARSER: */</span>
+<span class="typ">int </span>RunTest(XMLCONFPARSER *xcp, <span class="typ">char </span>*uri);
+<span class="typ">int </span>RunTestResolveEntity(<span class="typ">void </span>*UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader);
+<span class="typ">void </span>RunTestErrorHandler(LPXMLPARSER parser);
+<span class="typ">void </span>GetBaseDir(<span class="typ">unsigned char </span>*fullfile, <span class="typ">unsigned char </span>*targetdir);
+<span class="key">extern </span><span class="typ">int </span>fcompare(<span class="typ">const char </span>*fnam1, <span class="typ">const char </span>*fnam2);
+
+<span class="typ">int </span>cstream(BYTE *buf, <span class="typ">int </span>cBytes, <span class="typ">int </span>*cBytesActual, <span class="typ">void </span>*inputData)
+{
+  *cBytesActual = fread(buf, <span class="num">1</span>, cBytes, (<span class="typ">FILE</span>*)inputData);
+  <span class="key">return </span>(*cBytesActual &lt; cBytes);
+}
+
+<span class="typ">int </span>FreeInputData(<span class="typ">void </span>*UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader)
+{
+  fclose((<span class="typ">FILE</span>*)reader-&gt;inputData);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="com">/* TESTSUITE PARSER BEGIN */</span>
+
+<span class="typ">int </span>StartElement(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *uri, <span class="typ">const </span>XMLCH *localName, <span class="typ">const </span>XMLCH *qName, LPXMLVECTOR atts)
+{
+  XMLCONFPARSER *xcp = (XMLCONFPARSER*)UserData;
+  LPXMLRUNTIMEATT att;
+  <span class="typ">int </span>*pstate = STACK_PEEK(xcp-&gt;stateStack);
+  xcp-&gt;state = (pstate) ? *pstate : NONE;
+
+  <span class="key">if </span>(xcp-&gt;inMixedContent || xcp-&gt;state == TEST) {
+    <span class="com">/* + other tags that allow mixed content tested here */</span>
+    <span class="com">/* if we're in mixed content, we don't bother to use stack, just
+       incrementing (and decrementing in EndElement) the counter: */</span>
+    xcp-&gt;inMixedContent++;
+    <span class="com">/* could call mixed content legal tag check routine here e.g.
+    if (!isvalidmixedcontent(state, qName)) return sin(); */</span>
+    fprintf(PFOUT, <span class="str">&quot;&lt;%s&gt;&quot;</span>, qName);
+    <span class="key">return </span><span class="num">0</span>;
+  }
+
+  <span class="key">if </span>(xcp-&gt;state == NONE &amp;&amp; !strcmp(qName, <span class="str">&quot;TESTSUITE&quot;</span>)) {
+
+    <span class="key">if </span>(att = XMLParser_GetNamedItem(xcp-&gt;parser, <span class="str">&quot;PROFILE&quot;</span>))
+      fprintf(PFOUT, <span class="str">&quot;&lt;h1&gt;&lt;b&gt;%s&lt;/b&gt;&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;Parsifal XML Parser %s&lt;/h3&gt;&quot;</span>,
+        att-&gt;value, XMLParser_GetVersionString());
+    xcp-&gt;state = TESTSUITE;
+  }
+  <span class="key">else if </span>(xcp-&gt;state == TESTSUITE &amp;&amp; !strcmp(qName, <span class="str">&quot;TESTCASES&quot;</span>)) {
+
+    <span class="key">if </span>(att = XMLParser_GetNamedItem(xcp-&gt;parser, <span class="str">&quot;PROFILE&quot;</span>)) {
+      <span class="com">/* new testcase, spit out the profile header: */</span>
+      fprintf(PFOUT, <span class="str">&quot;&lt;br&gt;&lt;br&gt;&lt;h2&gt;Testcase profile: &lt;b&gt;%s&lt;/b&gt;&lt;/h2&gt;&lt;br&gt;&quot;</span>, att-&gt;value);
+      fputs(<span class="str">&quot;&lt;table cellspacing='0'&gt;&quot;</span>, PFOUT); <span class="com">/* open table for results */</span>
+    }
+    xcp-&gt;state = TESTCASES;
+  }
+  <span class="key">else if </span>(xcp-&gt;state == TESTCASES) {
+
+    <span class="key">if </span>(!strcmp(qName, <span class="str">&quot;TEST&quot;</span>)) {
+      <span class="key">if </span>(att = XMLParser_GetNamedItem(xcp-&gt;parser, <span class="str">&quot;URI&quot;</span>)) {
+        <span class="com">/* new test, run it: */</span>
+        <span class="key">if </span>(!RunTest(xcp, att-&gt;value))
+          fprintf(PFERR, <span class="str">&quot;Fatal Error running test: %s</span><span class="esc">\n</span><span class="str">&quot;</span>, att-&gt;value);
+      }
+      xcp-&gt;state = TEST;
+    }
+    <span class="key">else if </span>(!strcmp(qName, <span class="str">&quot;TESTCASES&quot;</span>)) { <span class="com">/* for some reason
+
+      there's TESTCASES inside TESTCASES in ibm tests,
+      so it must ust be handled here: */</span>
+      xcp-&gt;state = TESTCASES;
+    }
+  }
+  <span class="key">else </span>{
+    fprintf(PFERR, <span class="str">&quot;Unexpected tag: %s</span><span class="esc">\n</span><span class="str">&quot;</span>, qName);
+    <span class="key">return </span>XML_ABORT;
+  }
+
+  STACK_PUSH(xcp-&gt;stateStack, &amp;xcp-&gt;state);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">int </span>EndElement(<span class="typ">void </span>*UserData, <span class="typ">const </span>XMLCH *uri, <span class="typ">const </span>XMLCH *localName, <span class="typ">const </span>XMLCH *qName)
+{
+  XMLCONFPARSER *xcp = (XMLCONFPARSER*)UserData;
+  <span class="key">if </span>(xcp-&gt;inMixedContent) {
+    xcp-&gt;inMixedContent--;
+    fprintf(PFOUT, <span class="str">&quot;&lt;/%s&gt;&quot;</span>, qName); <span class="com">/* EM or B tags */</span>
+  }
+  <span class="key">else </span>{
+    <span class="key">if </span>(STACK_POP(xcp-&gt;stateStack, &amp;xcp-&gt;state)) {
+      <span class="key">if </span>(xcp-&gt;state == TEST) {
+        <span class="com">/* close TEST description column and row: */</span>
+        fputs(<span class="str">&quot;&lt;/td&gt;&quot;</span>, PFOUT);
+        EMPTY_COLS(<span class="num">3</span>, PFOUT);
+        fputs(<span class="str">&quot;&lt;/tr&gt;&quot;</span>, PFOUT);
+      }
+      <span class="key">else if </span>(xcp-&gt;state == TESTCASES) {
+        <span class="typ">int </span>*pstate = STACK_PEEK(xcp-&gt;stateStack);
+        <span class="com">/* check is needed 'cos there can be TESTCASES inside TESTCASES */</span>
+        <span class="key">if </span>(pstate &amp;&amp; *pstate != TESTCASES) fputs(<span class="str">&quot;&lt;/table&gt;&quot;</span>, PFOUT);
+      }
+    }
+  }
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">void </span>PrintEsc(<span class="typ">FILE </span>*fp, <span class="typ">const </span>XMLCH *str, <span class="typ">int </span>len)
+{
+  <span class="key">for </span>(; len--; str++) {
+    <span class="key">switch</span>(*str) {
+      <span class="key">case </span><span class="str">'&amp;'</span>: fputs(<span class="str">&quot;&amp;amp;&quot;</span>, fp); <span class="key">break</span>;
+      <span class="key">case </span><span class="str">'</span><span class="esc">\&quot;</span><span class="str">'</span>: fputs(<span class="str">&quot;&amp;quot;&quot;</span>, fp); <span class="key">break</span>;
+      <span class="com">//case '\'': fprintf(&quot;&amp;apos;&quot;, fp); break;
+</span>      <span class="key">case </span><span class="str">'&lt;'</span>: fputs(<span class="str">&quot;&amp;lt;&quot;</span>, fp); <span class="key">break</span>;
+      <span class="key">case </span><span class="str">'&gt;'</span>: fputs(<span class="str">&quot;&amp;gt;&quot;</span>, fp); <span class="key">break</span>;
+      <span class="key">case </span><span class="str">'</span><span class="esc">\x9'</span><span class="str">: fputs(&quot;&amp;#9;&quot;, fp); break;
+      case '</span><span class="esc">\xA'</span>: fputs(<span class="str">&quot;&amp;#10;&quot;</span>, fp); <span class="key">break</span>;
+      <span class="key">case </span><span class="str">'</span><span class="esc">\xD'</span><span class="str">: fputs(&quot;&amp;#13;&quot;, fp); break;
+      default: fputc(*str, fp); break;
+    }
+  }
+}
+
+int Characters(void *UserData, const XMLCH *Chars, int cbChars)
+{
+  XMLCONFPARSER *xcp = (XMLCONFPARSER*)UserData;
+  if (xcp-&gt;state == TEST)
+    PrintEsc(PFOUT, Chars, cbChars);
+  return 0;
+}
+
+void ErrorHandler(LPXMLPARSER parser)
+{
+  if (parser-&gt;ErrorCode != ERR_XMLP_ABORT) {
+    XMLCH *sysID = XMLParser_GetSystemID(parser);
+
+    if (sysID) fprintf(PFERR, &quot;Parsing resource %s failed!</span><span class="esc">\n</span><span class="str">&quot;, sysID);
+    fprintf(PFERR, &quot;Error: %s</span><span class="esc">\n</span><span class="str">Code: %d</span><span class="esc">\n</span><span class="str">Line: %d</span><span class="esc">\n</span><span class="str">Column: %d</span><span class="esc">\n</span><span class="str">&quot;,
+      parser-&gt;ErrorString, parser-&gt;ErrorCode,
+      parser-&gt;ErrorLine, parser-&gt;ErrorColumn);
+  }
+}
+
+int ResolveEntity(void *UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader)
+{
+  FILE *f;
+  if (!(f = fopen(entity-&gt;systemID, &quot;rb&quot;))) {
+    fprintf(PFERR, &quot;error opening file '</span>%s<span class="str">'!</span><span class="esc">\n</span><span class="str">&quot;, entity-&gt;systemID);
+    return XML_ABORT;
+  }
+  reader-&gt;inputData = f;
+  return 0;
+}
+/* TESTSUITE PARSER END */
+
+/* RUNTEST PARSER BEGIN */
+/* these are parser routines that run the test itself,
+   we don'</span>t need many event handlers <span class="key">for </span>it only
+   resolveEntityHandler and related stuff */
+
+<span class="typ">int </span>RunTest(XMLCONFPARSER *xcp, <span class="typ">char </span>*uri)
+{
+  LPXMLRUNTIMEATT att;
+  XMLCH testuri[MAX_PATH];
+  XMLCH xmlbase[MAX_PATH];
+  XMLCH id[<span class="num">256</span>];
+  XMLCH *s;
+  <span class="typ">FILE </span>*f;
+  RUNPARSERDATA rdata;
+  <span class="typ">int </span>result, expect;
+  LPXMLPARSER parser = xcp-&gt;runParser;
+
+  <span class="key">if </span>((s = XMLParser_GetPrefixMapping(xcp-&gt;parser, <span class="str">&quot;xml:base&quot;</span>)))
+    strcpy(xmlbase, s); <span class="com">/* we save current xmlbase
+                 (although it shouldn't get modified 'cos
+                 main parser isn't running during RunTest()) */</span>
+  <span class="key">else </span>{
+    <span class="com">/* rmt-e2e-18:
+    External entity containing start of entity declaration is
+    base URI for system identifier, so:  */</span>
+    XMLCH *sysID = XMLParser_GetSystemID(xcp-&gt;parser);
+    <span class="key">if </span>(!sysID) xmlbase[<span class="num">0</span>] = <span class="str">'</span><span class="esc">\0</span><span class="str">'</span>;
+    <span class="key">else </span>GetBaseDir(sysID, xmlbase);
+  }
+
+  strcpy(testuri, xmlbase);
+  strcat(testuri, uri);
+
+  puts(testuri);
+
+  <span class="com">/* resolve basedir for external entities, DTD and for canonxml */</span>
+  GetBaseDir(testuri, rdata.testbasedir);
+  parser-&gt;UserData = &amp;rdata;
+
+  <span class="key">if </span>((f = fopen(testuri, <span class="str">&quot;rb&quot;</span>))) {
+    result = XMLParser_Parse(parser, cstream, f, <span class="num">0</span>);
+    fclose(f);
+  }
+  <span class="key">else </span>{
+    fprintf(PFERR, <span class="str">&quot;Error opening file %s</span><span class="esc">\n</span><span class="str">&quot;</span>, testuri);
+    <span class="key">return </span><span class="num">0</span>;
+  }
+
+  xcp-&gt;testCount++;
+
+  <span class="com">/* 1 row columns: ID, TYPE, PASS/FAIL, ERRORSTRING
+     2 row columns: ENTITIES + OUTPUT in one col, 3 empty cols
+     3 row: test description, 3 empty cols
+  */</span>
+  att = XMLParser_GetNamedItem(xcp-&gt;parser, <span class="str">&quot;ID&quot;</span>);
+  strcpy(id, (att) ? att-&gt;value : <span class="str">&quot;unknown&quot;</span>);
+  fputs((xcp-&gt;testCount % <span class="num">2</span>) ? <span class="str">&quot;&lt;tr bgcolor='#EEEEEE'&gt;&quot;</span> : <span class="str">&quot;&lt;tr&gt;&quot;</span>, xcp-&gt;pfout);
+  fprintf(xcp-&gt;pfout, <span class="str">&quot;&lt;td&gt;&lt;a href='%s'&gt;%s&lt;/a&gt;&lt;/td&gt;&quot;</span>, testuri, id);
+
+  att = XMLParser_GetNamedItem(xcp-&gt;parser, <span class="str">&quot;TYPE&quot;</span>);
+  <span class="key">if </span>(att) {
+    <span class="key">if </span>(!strcmp(att-&gt;value, <span class="str">&quot;valid&quot;</span>)) expect = <span class="num">1</span>; <span class="com">/* hmm. we're not validating but... */</span>
+    <span class="com">/* &quot;Nonvalidating parsers must also accept &quot;invalid&quot; testcases,
+           but validating ones must reject them.&quot; */</span>
+    <span class="key">else if </span>(!strcmp(att-&gt;value, <span class="str">&quot;invalid&quot;</span>)) expect = <span class="num">1</span>;
+    <span class="key">else </span>expect = <span class="num">0</span>; <span class="com">/* error, not-wf */</span>
+    fprintf(xcp-&gt;pfout, <span class="str">&quot;&lt;td&gt;%s&lt;/td&gt;&quot;</span>, att-&gt;value);
+    <span class="key">if </span>(result == expect) xcp-&gt;testSuccess++;
+  }
+  <span class="key">else </span>{
+    EMPTY_COLS(<span class="num">1</span>, xcp-&gt;pfout);
+  }
+
+  <span class="key">if </span>(result != expect) fprintf(xcp-&gt;pffailed, <span class="str">&quot;%s</span><span class="esc">\n</span><span class="str">&quot;</span>, id);
+
+  fprintf(xcp-&gt;pfout, <span class="str">&quot;&lt;td&gt;&lt;font color='%s'&gt;&quot;</span>, (result == expect) ? <span class="str">&quot;#008000&quot;</span> : <span class="str">&quot;#FF0000&quot;</span>);
+  <span class="key">if </span>(result)
+    fprintf(xcp-&gt;pfout, <span class="str">&quot;PASS&lt;/font&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&quot;</span>);
+  <span class="key">else </span>{
+    fputs(<span class="str">&quot;FAIL&lt;/font&gt;&lt;/td&gt;&lt;td&gt;&quot;</span>, xcp-&gt;pfout);
+    PrintEsc(xcp-&gt;pfout, parser-&gt;ErrorString, strlen(parser-&gt;ErrorString));
+    fputs(<span class="str">&quot;&lt;/td&gt;&quot;</span>, xcp-&gt;pfout);
+  }
+
+  fputs(<span class="str">&quot;&lt;/tr&gt;&quot;</span>, xcp-&gt;pfout);
+  fputs((xcp-&gt;testCount % <span class="num">2</span>) ? <span class="str">&quot;&lt;tr bgcolor='#EEEEEE'&gt;&quot;</span> : <span class="str">&quot;&lt;tr&gt;&quot;</span>, xcp-&gt;pfout);
+
+  <span class="key">if </span>((att = XMLParser_GetNamedItem(xcp-&gt;parser, <span class="str">&quot;ENTITIES&quot;</span>)))
+    fprintf(xcp-&gt;pfout, <span class="str">&quot;&lt;td&gt;&lt;b&gt;entities:&lt;/b&gt; %s&amp;nbsp;&amp;nbsp;&quot;</span>, att-&gt;value);
+  <span class="key">else
+    </span>fputs(<span class="str">&quot;&lt;td&gt;&quot;</span>, xcp-&gt;pfout);
+
+  <span class="com">/* OUTPUT TEST */</span>
+  att = XMLParser_GetNamedItem(xcp-&gt;parser, <span class="str">&quot;OUTPUT&quot;</span>);
+  <span class="key">if </span>(att) {
+    <span class="typ">int </span>compres;
+    XMLCH cmd[<span class="num">2048</span>];
+    XMLCH outfile1[MAX_PATH], outfile2[MAX_PATH];
+
+    strcpy(outfile1, xmlbase);
+    strcat(outfile1, att-&gt;value);
+    sprintf(outfile2, <span class="str">&quot;%s%s.xml&quot;</span>, OUTDIR, id);
+    sprintf(cmd, <span class="str">&quot;canonxml %s %s %s&quot;</span>, testuri, outfile2, rdata.testbasedir);
+    system(cmd);
+
+    compres = fcompare(outfile1, outfile2);
+
+    fprintf(xcp-&gt;pfout, <span class="str">&quot;&lt;font color='%s'&gt;OUTPUT:&lt;/font&gt;&quot;</span>,
+      (!compres) ? <span class="str">&quot;#008000&quot;</span> : <span class="str">&quot;#FF0000&quot;</span>);
+    <span class="key">if </span>(compres == <span class="num">-1</span>)
+      fputs(<span class="str">&quot; error&quot;</span>, xcp-&gt;pfout);
+    <span class="key">else </span>{
+<span class="dir">#ifdef MAKE_DIFFGRAM
+</span>      <span class="key">if </span>(compres) {
+        XMLCH difffile[MAX_PATH];
+        sprintf(difffile, <span class="str">&quot;%s%s-diffgram.xml&quot;</span>, OUTDIR, id);
+        sprintf(cmd, <span class="str">&quot;xmldiff %s %s %s&quot;</span>, outfile1, outfile2, difffile);
+        system(cmd);
+        fprintf(xcp-&gt;pfout, <span class="str">&quot; &lt;a href='%s'&gt;1&lt;/a&gt; &lt;a href='%s'&gt;2&lt;/a&gt; &lt;a href='%s'&gt;diff&lt;/a&gt;&quot;</span>, outfile1, outfile2, difffile);
+      }
+      <span class="key">else
+</span><span class="dir">#endif
+</span>        fprintf(xcp-&gt;pfout, <span class="str">&quot; &lt;a href='%s'&gt;1&lt;/a&gt; &lt;a href='%s'&gt;2&lt;/a&gt;&quot;</span>, outfile1, outfile2);
+    }
+  }
+  <span class="key">else </span>{
+    fputs(<span class="str">&quot;&lt;/td&gt;&quot;</span>, xcp-&gt;pfout);
+  }
+  <span class="com">/* OUTPUT TEST END */</span>
+
+  <span class="key">if </span>(!parser-&gt;ErrorCode) {
+    EMPTY_COLS(<span class="num">3</span>, xcp-&gt;pfout);
+  }
+  <span class="key">else </span>{
+    EMPTY_COLS(<span class="num">2</span>, xcp-&gt;pfout);
+    fprintf(xcp-&gt;pfout, <span class="str">&quot;&lt;td&gt;Line: %d Col: %d &quot;</span>, parser-&gt;ErrorLine, parser-&gt;ErrorColumn);
+    <span class="key">if </span>(rdata.intEnt[<span class="num">0</span>]) fprintf(xcp-&gt;pfout, <span class="str">&quot;in entity: '%s' &quot;</span>, rdata.intEnt);
+    <span class="key">if </span>(rdata.systemID[<span class="num">0</span>]) fprintf(xcp-&gt;pfout, <span class="str">&quot;systemID: '%s'&quot;</span>, rdata.systemID);
+    fputs(<span class="str">&quot;&lt;/td&gt;&quot;</span>, xcp-&gt;pfout);
+  }
+
+  fputs(<span class="str">&quot;&lt;/tr&gt;&quot;</span>, xcp-&gt;pfout);
+  <span class="com">/* open new table row for test description (reported via Characters): */</span>
+  fputs((xcp-&gt;testCount % <span class="num">2</span>) ? <span class="str">&quot;&lt;tr bgcolor='#EEEEEE'&gt;&lt;td&gt;&quot;</span> : <span class="str">&quot;&lt;tr&gt;&lt;td&gt;&quot;</span>, xcp-&gt;pfout);
+  <span class="key">return </span><span class="num">1</span>;
+}
+
+<span class="com">/* GetBaseDir gets path from &lt;fullfile&gt; string  into
+&lt;targetdir&gt; string (which must be allocated for strlen(fullfile)+1)*/</span>
+<span class="typ">void </span>GetBaseDir(<span class="typ">unsigned char </span>*fullfile, <span class="typ">unsigned char </span>*targetdir)
+{
+  <span class="typ">int </span>slash = strlen(fullfile);
+  <span class="key">while</span>(slash &amp;&amp; *(fullfile+slash) != <span class="str">'/'</span>) slash--;
+  <span class="key">if </span>(slash) {
+    memcpy(targetdir, fullfile, slash+<span class="num">1</span>);
+    targetdir[slash+<span class="num">1</span>] = <span class="str">'</span><span class="esc">\0</span><span class="str">'</span>;
+  }
+  <span class="key">else </span>{
+    targetdir[<span class="num">0</span>] = <span class="str">'</span><span class="esc">\0</span><span class="str">'</span>;
+  }
+}
+
+<span class="typ">int </span>RunTestResolveEntity(<span class="typ">void </span>*UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader)
+{
+  <span class="typ">char </span>testuri[MAX_PATH];
+  <span class="typ">FILE </span>*f;
+  RUNPARSERDATA *rdata = (RUNPARSERDATA*)UserData;
+  strcpy(testuri, rdata-&gt;testbasedir);
+  strcat(testuri, entity-&gt;systemID);
+
+  <span class="key">if </span>(!(f = fopen(testuri, <span class="str">&quot;rb&quot;</span>))) {
+    fprintf(PFERR, <span class="str">&quot;Error opening file %s</span><span class="esc">\n</span><span class="str">&quot;</span>, testuri);
+    <span class="key">return </span>XML_ABORT;
+  }
+  reader-&gt;inputData = f;
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+<span class="typ">void </span>RunTestErrorHandler(LPXMLPARSER parser)
+{
+  RUNPARSERDATA *rdata = (RUNPARSERDATA*)parser-&gt;UserData;
+  XMLCH *systemID = XMLParser_GetSystemID(parser);
+  LPXMLENTITY curEnt = XMLParser_GetCurrentEntity(parser);
+  <span class="key">if </span>(curEnt &amp;&amp; !curEnt-&gt;systemID) strcpy(rdata-&gt;intEnt, curEnt-&gt;name);
+  <span class="key">else </span>rdata-&gt;intEnt[<span class="num">0</span>] = <span class="str">'</span><span class="esc">\0</span><span class="str">'</span>;
+  <span class="key">if </span>(systemID) strcpy(rdata-&gt;systemID, systemID);
+  <span class="key">else </span>rdata-&gt;systemID[<span class="num">0</span>] = <span class="str">'</span><span class="esc">\0</span><span class="str">'</span>;
+}
+
+<span class="com">/* RUNTEST PARSER END */</span>
+
+<span class="typ">int </span>main(<span class="typ">int </span>argc, <span class="typ">char</span>* argv[])
+{
+  LPXMLPARSER parser;
+  XMLCONFPARSER parserdata;
+  <span class="typ">FILE </span>*f;
+  <span class="typ">char </span>namePffailed[<span class="num">100</span>];
+
+  <span class="dir">#ifdef _MSC_VER
+</span>    <span class="dir">#ifdef _DEBUG
+</span>      <span class="typ">int </span>tmpFlag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
+      <span class="com">// Turn on leak-checking bit
+</span>      tmpFlag |= _CRTDBG_LEAK_CHECK_DF; <span class="com">/* dump leaks to output */</span>
+      <span class="com">// Set flag to the new value
+</span>      _CrtSetDbgFlag( tmpFlag );
+    <span class="dir">#endif
+</span>  <span class="dir">#endif
+</span>
+  <span class="key">if </span>(argc != <span class="num">3</span>) {
+    fprintf(PFERR, <span class="str">&quot;Give filenames e.g. C:</span><span class="esc">\\</span><span class="str">XMLCONF</span><span class="esc">\\</span><span class="str">XMLCONF.XML RESULTS.HTML</span><span class="esc">\n</span><span class="str">&quot;</span>);
+    <span class="key">return </span><span class="num">1</span>;
+  }
+
+  <span class="com">/* Initialize xmlconf.xml parser: */</span>
+  <span class="key">if </span>(!XMLParser_Create(&amp;parser)) {
+    fprintf(PFERR, <span class="str">&quot;Error creating main parser in main()</span><span class="esc">\n</span><span class="str">&quot;</span>);
+    <span class="key">return </span><span class="num">1</span>;
+  }
+
+  parser-&gt;startElementHandler = StartElement;
+  parser-&gt;endElementHandler = EndElement;
+  parser-&gt;charactersHandler = Characters;
+  parser-&gt;errorHandler = ErrorHandler;
+  parser-&gt;resolveEntityHandler = ResolveEntity;
+  parser-&gt;externalEntityParsedHandler = FreeInputData;
+  parser-&gt;UserData = &amp;parserdata;
+
+  parserdata.parser = parser;
+  parserdata.inMixedContent = <span class="num">0</span>;
+  parserdata.testCount = <span class="num">0</span>;
+  parserdata.testSuccess = <span class="num">0</span>;
+
+  <span class="com">/* Initialize runParser: */</span>
+  <span class="com">/* we could create new parser in RunTest every time we're running
+     new test, but for extra stress testing we're using the
+     same parser: */</span>
+  <span class="key">if </span>(!XMLParser_Create(&amp;parserdata.runParser)) {
+    fprintf(PFERR, <span class="str">&quot;Error creating runParser in main()</span><span class="esc">\n</span><span class="str">&quot;</span>);
+    <span class="key">return </span><span class="num">1</span>;
+  }
+
+  <span class="com">/* make parsifal to report undefined entities and not to use skippedEntity: */</span>
+  _XMLParser_SetFlag(parserdata.runParser, XMLFLAG_UNDEF_GENERAL_ENTITIES, <span class="num">1</span>);
+  <span class="com">/* assign handlers: */</span>
+  parserdata.runParser-&gt;errorHandler = RunTestErrorHandler;
+  parserdata.runParser-&gt;resolveEntityHandler = RunTestResolveEntity;
+  parserdata.runParser-&gt;externalEntityParsedHandler = FreeInputData;
+
+  <span class="key">if </span>(!XMLVector_Create(&amp;parserdata.stateStack, <span class="num">6</span>, <span class="key">sizeof</span>(<span class="typ">int</span>))) {
+    fprintf(PFERR, <span class="str">&quot;Error creating stack in main()</span><span class="esc">\n</span><span class="str">&quot;</span>);
+    <span class="key">return </span><span class="num">1</span>;
+  }
+
+
+  <span class="key">if </span>(!(f = fopen(argv[<span class="num">1</span>], <span class="str">&quot;rb&quot;</span>))) {
+    fprintf(PFERR, <span class="str">&quot;Error opening input file %s</span><span class="esc">\n</span><span class="str">&quot;</span>, argv[<span class="num">1</span>]);
+    <span class="key">return </span><span class="num">1</span>;
+  }
+
+  <span class="key">if </span>(!(parserdata.pfout = fopen(argv[<span class="num">2</span>], <span class="str">&quot;wb&quot;</span>))) {
+    fprintf(PFERR, <span class="str">&quot;Error opening output file %s</span><span class="esc">\n</span><span class="str">&quot;</span>, argv[<span class="num">2</span>]);
+    <span class="key">return </span><span class="num">1</span>;
+  }
+
+  sprintf(namePffailed, <span class="str">&quot;%s-failed-%s.txt&quot;</span>, argv[<span class="num">1</span>], XMLParser_GetVersionString());
+  <span class="key">if </span>(!(parserdata.pffailed = fopen(namePffailed, <span class="str">&quot;w&quot;</span>))) {
+    fprintf(PFERR, <span class="str">&quot;Error opening output file namePffailed</span><span class="esc">\n</span><span class="str">&quot;</span>, namePffailed);
+    <span class="key">return </span><span class="num">1</span>;
+  }
+
+  fputs(<span class="str">&quot;&lt;html&gt;&lt;body&gt;&quot;</span>, parserdata.pfout);
+
+  XMLParser_Parse(parser, cstream, f, NULL);
+
+  fprintf(parserdata.pfout, <span class="str">&quot;&lt;br&gt;&lt;br&gt;&lt;b&gt;%d&lt;/b&gt; tests successful out of total &lt;b&gt;%d&lt;/b&gt;.&quot;</span>,
+    parserdata.testSuccess, parserdata.testCount);
+  fputs(<span class="str">&quot;&lt;/body&gt;&lt;/html&gt;&quot;</span>, parserdata.pfout);
+
+  fclose(f);
+  fclose(parserdata.pfout);
+  XMLVector_Free(parserdata.stateStack);
+  XMLParser_Free(parserdata.runParser);
+  XMLParser_Free(parser);
+  <span class="key">return </span><span class="num">0</span>;
+}
+
+</pre>
+</body>
+</html>
+<!--HTML generated by highlight 2.0-17, http://www.andre-simon.de/-->

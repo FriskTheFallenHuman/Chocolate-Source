@@ -1,0 +1,334 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta name="generator" content=
+"HTML Tidy for Windows (vers 1st April 2002), see www.w3.org">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Parsifal XML parser</title>
+<link href="style.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div>
+<div class="codebox"><font size="6" color="#0011BB"><b>Parsifal</b></font><br>
+Lightweight XML Parser</div>
+
+<br>
+<br>
+<h4>Abstract</h4>
+
+<br>
+<p>Parsifal is minimal non-validating XML parser written in ANSI C.
+Parsifal implements the subset of <a href="http://www.saxproject.org/" target="_top">SAX2</a> including namespace
+support.</p>
+
+<p>Parsifal can be used for parsing XML based messages (such as SOAP and RSS)
+and for application specific data processing e.g. config files, data files
+etc. <b> Parsifal can also be used for limited document-oriented processing and for
+parsing modular documents</b> because
+it contains supports for internal and external general entities - it doesn't
+support currently parameter
+entities, default attributes or other DTD features. Parsifal can be used for
+processing large data files and streams too since its SAX based and
+consumes very little memory not to mention it is <a href="#PERFORMANCE">fast</a> enough for most
+purposes 'cos its written in C.</p>
+
+<p>
+Using Parsifal in place of large XML processing libraries (e.g. libxml, xerces) or even
+in the place of small Expat (which is considerably bigger and more complicated) can be justified for limited memory 
+environments and in applications requiring bundled parser. If you need higher level tools, for example library supporting
+DTD validation or dom/xpath processing, you should look for other libs of course.
+</p>
+
+<p>You can <b>download Parsifal including source, documentation and
+samples</b> from <a href="download.html">here</a></p>
+
+<br>
+<br>
+<h4>Features</h4>
+
+<br>
+ 
+<div>
+<table>
+<tr>
+<th>Supported SAX events</th>
+<th>&nbsp;</th>
+</tr>
+
+<tr>
+<td width="30%">startDocument/endDocument</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td width="30%">startElement/endElement</td>
+<td>Thorough namespace support in startElement/endElement
+callbacks. Also supports getting attributes by name or by index
+using methods similar to SAX attributes handling.</td>
+</tr>
+
+<tr>
+<td width="30%">characters</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td width="30%">ignorableWhitespace</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td width="30%">comment</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td width="30%">startCDATA/endCDATA</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td width="30%">processingInstruction</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td width="30%">errorHandler</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td width="30%">startDTD/endDTD</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td width="30%">defaultHandler</td>
+<td>for miscellaneous character data</td>
+</tr>
+
+<tr>
+<td width="30%">xmlDecl</td>
+<td>reports XML declaration &lt;?xml version=&quot;1.0&quot; ... tag</td>
+</tr>
+
+<tr>
+<td width="30%">skippedEntity</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td width="30%">resolveEntity/externalEntityParsed</td>
+<td>for parsing external entities/external DTDs (currently Parsifal scan DTDs for entities only)</td>
+</tr>
+
+<tr>
+<td width="30%">startEntity/endEntity</td>
+<td>&nbsp;</td>
+</tr>
+</table>
+</div>
+
+<br>
+<br>
+<b>List of XML 1.0 features that are not currently supported by Parsifal:</b><br>
+<ul>
+<li>Default attributes etc. attribute declaration processing in DTDs</li>
+<li>Checking DTDs for well-formedness (aside from ENTITY declarations</li>
+<li>DTD Parameter entities, unparsed entities</li>
+<li>PublicID and SystemID well-formedness isn't checked</li>
+<li>XML Namespaces 1.0 duplicate URIs aren't checked</li>
+</ul>
+<br>
+
+<br>
+<br>
+<div>
+<table>
+<tr>
+<th>Supported SAX properties/features</th>
+</tr>
+
+<tr>
+<td width="30%">http://xml.org/sax/features/namespaces</td>
+</tr>
+
+<tr>
+<td width="30%">http://xml.org/sax/features/namespace-prefixes</td>
+</tr>
+
+<tr>
+<td width="30%">http://xml.org/sax/features/external-general-entities</td>
+</tr>
+
+<tr>
+<td width="30%">see <a href="manual.html#FEATURES">XMLFlags</a> for info on Parsifal specific
+  properties</td>
+</tr>
+</table>
+</div>
+
+<br>
+<br>
+<h4>Supported XML encodings</h4>
+
+<br>
+<ul>
+
+<li>UTF-8</li>
+
+<li>ISO-8859-1</li>
+
+<li>US-ASCII</li>
+
+</ul>
+
+<br>
+When compiled with <b>GNU libiconv</b> support:
+<br>
+<br>
+<ul>
+
+<li>UTF-16, UCS-2, UTF-32, UCS-4</li>
+
+<li>EUC-JP</li>
+
+<li>SHIFT_JIS</li>
+
+<li>ISO-8859-{1,2,3,4,5,7,9,10,13,14,15,16}</li>
+
+<li>other: see <a href="http://www.gnu.org/software/libiconv/" target="_top">www.gnu.org/software/libiconv</a> for list of all supported encodings</li>
+
+</ul>
+
+
+<br>
+see also <a href="manual.html#ENCODING_NOTES">Notes about
+encodings</a><br>
+<br>
+<br>
+<h4>Licence</h4>
+
+<br>
+Parsifal is released to the public domain and is provided "AS IS,"
+without a warranty of any kind.
+Use at your own risk. See <a href="../COPYING">COPYING</a>. Note that even though Parsifal is Public Domain software,
+GNU libiconv uses GPL licence and that will affect your software too if you use libiconv.
+<br>
+<h4>Conformance</h4>
+
+<br>
+Parsifal accepts only well-formed XML documents and despite of
+its small size Parsifal enforces strict rules for XML tag names,
+namespace declarations, XML declaration etc. See <a href="conformance.html">OASIS XML testsuite results</a>
+<br>
+<h4>How to use</h4>
+
+<br>
+<p>
+Read the <a href="manual.html">manual page</a>. Examine the samples
+that come with the <a href="download.html">download</a>.
+</p>
+<br>
+<div>
+<table>
+<tr>
+<th>Sample</th>
+<th>Description (see README in each sample dir for more info)</th>
+</tr>
+
+<tr>
+<td width="15%"><a href="csrchtml/elements_c.html">elements.c</a></td>
+<td>Simple example that output elements from stdin into stdout with some indentation.</td>
+<td><a href="src/samples/elements/README">README</a></TD>
+</tr>
+
+<tr>
+<td width="15%"><a href="csrchtml/zenstory_c.html">zenstory.c</a><br><a href="csrchtml/zenstory_h.html">zenstory.h</a></td>
+<td>Despite of its name demostrates some <b>real world SAX parsing techniques</b>.</td>
+<td><a href="src/samples/zenstory/README">README</a></TD>
+</tr>
+
+<tr>
+<td width="15%"><a href="csrchtml/canonxml_c.html">canonxml.c</a></td>
+<td>Turns input XML file into canonical XML (linefeeds turned into character references, attributes sorted etc.). Is used by xmltest OASIS XML testsuite
+parser.</td>
+<td><a href="src/samples/canonxml/README">README</a></TD>
+</tr>
+
+<tr>
+<td width="15%"><a href="csrchtml/winurl_c.html">winurl.c</a></td>
+<td>Uses windows urlmon.dll for simple parsing of urls - only inputsource handling is windows specific, otherwise os independent.</td>
+<td><a href="src/samples/winurl/README">README</a></TD>
+</tr>
+
+<tr>
+<td width="15%"><a href="csrchtml/xmltest_c.html">xmltest.c</a></td>
+<td>OASIS XML testsuite parser</td>
+<td><a href="src/samples/xmltest/README">README</a></TD>
+</tr>
+
+<tr>
+<td width="15%"><a href="csrchtml/test_pool_c.html">test_pool.c</a></td>
+<td>Demonstrates XMLVector, XMLStringbuf and XMLPool usage.<br>
+(These are datastructures and tools that are used internally by Parsifal but
+can be used in your application too - This example has nothing to do with XML parsing)</td>
+<td>&nbsp;</TD>
+</tr>
+
+
+</table>
+</div>
+<br>
+<br>
+<h4><a name="PERFORMANCE">Performance</a></h4>
+
+<br>
+<p>
+I've done some Parsifal benchmarking on my Dell Inspiron 8200 laptop:
+<ul>
+<li>1.7 GHz Mobile P4 cpu</li> 
+<li>384 MB 266 DDR RAM</li>
+<li>40 GB 5400 rpm HDD</li> 
+<li>WinXP</li>
+</ul>
+<br>
+<p>
+In-memory  <b>11 MB test.rdf</b> UTF-8 encoded file, just dummy startElement,
+endElement and characters handlers set, gets parsed in about <b>0.88 sec</b> (namespaces on). Not bad though parsing performance could be measured
+in many ways; sometimes parser's fast initialization time and small memory usage 
+could lead to better overall performance with small documents in some messaging environment
+for example.
+</p>
+<p>
+<b>Expat-1.95.6</b> parses test.rdf in about <b>0.45 sec</b>
+(namespaces on), but oh the complexity of it... Note also that although Parsifal is slower than Expat, Parsifal provides more thorough information for some events;
+namespace information and XMLParser_GetNamedItem make Parsifal easier for some parsing tasks. 
+</p>
+<p>There's also many optimizations areas in Parsifal. Version 0.7.0 is about 50% faster than 0.6.8, so we'll see...
+</p>
+<p>
+<b>NOTE:</b> 11 MB doc is relatively large XML doc and if that's parsed in less than a second in my test system this means
+that parsing should be fast enough for everybody; for example 654 KB 1998statistics.xml
+(http://www.ibiblio.org/xml/examples/1998statistics.xml) gets parsed in about <b>0.05 sec!</b> I've also parsed very large docs with Parsifal without problems.
+256 MB file takes about 50 secs but is parsed ok.
+</p>
+<br>
+
+<h4>ChangeLog</h4>
+
+<br>
+<a href="../ChangeLog">ChangeLog</a> is here. If you've been using Parsifal prior to version 0.7.0, read <a href="../APIChanges">API
+changes</a> too.
+<br>
+<br>
+
+<hr>
+<p><font color="#004040">Copyright &copy; 2002-2004 Toni
+Uusitalo.<br>
+Send mail, suggestions and bug reports to<br><img src="pics/semail.gif"><br>
+Last modified: 13.02.2004 22:35</font></p>
+</div>
+</body>
+</html>
+

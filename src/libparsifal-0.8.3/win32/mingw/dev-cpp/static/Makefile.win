@@ -1,0 +1,48 @@
+# Project: libparsifal
+# Makefile created by Dev-C++ 4.9.8.0
+
+CPP  = g++.exe
+CC   = gcc.exe
+WINDRES = windres.exe
+RES  = 
+OBJ  = ../../../../src/bistream.o ../../../../src/encoding.o ../../../../src/parsifal.o ../../../../src/xmlhash.o ../../../../src/xmlsbuf.o ../../../../src/xmlvect.o ../../../../src/xmlpool.o $(RES)
+LINKOBJ  = ../../../../src/bistream.o ../../../../src/encoding.o ../../../../src/parsifal.o ../../../../src/xmlhash.o ../../../../src/xmlsbuf.o ../../../../src/xmlvect.o ../../../../src/xmlpool.o $(RES)
+LIBS =  -L"C:/Dev-Cpp/lib" 
+INCS =  -I"C:/Dev-Cpp/include"  -I"../../../../include/libparsifal" 
+CXXINCS =  -I"C:/Dev-Cpp/include/c++"  -I"C:/Dev-Cpp/include/c++/mingw32"  -I"C:/Dev-Cpp/include/c++/backward"  -I"C:/Dev-Cpp/include"  -I"../../../../include/libparsifal" 
+BIN  = libparsifal.a
+CXXFLAGS = $(CXXINCS)  -ansi -O3
+CFLAGS = $(INCS)-DDTD_SUPPORT=1 -DHAS_STRICMP=1 -DMAX_SPEED=1     -ansi -O3
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before libparsifal.a all-after
+
+
+clean: clean-custom
+	rm -f $(OBJ) $(BIN)
+
+$(BIN): $(LINKOBJ)
+	ar r $(BIN) $(LINKOBJ)
+	ranlib $(BIN)
+
+../../../../src/bistream.o: ../../../../src/bistream.c
+	$(CC) -c ../../../../src/bistream.c -o ../../../../src/bistream.o $(CFLAGS)
+
+../../../../src/encoding.o: ../../../../src/encoding.c
+	$(CC) -c ../../../../src/encoding.c -o ../../../../src/encoding.o $(CFLAGS)
+
+../../../../src/parsifal.o: ../../../../src/parsifal.c
+	$(CC) -c ../../../../src/parsifal.c -o ../../../../src/parsifal.o $(CFLAGS)
+
+../../../../src/xmlhash.o: ../../../../src/xmlhash.c
+	$(CC) -c ../../../../src/xmlhash.c -o ../../../../src/xmlhash.o $(CFLAGS)
+
+../../../../src/xmlsbuf.o: ../../../../src/xmlsbuf.c
+	$(CC) -c ../../../../src/xmlsbuf.c -o ../../../../src/xmlsbuf.o $(CFLAGS)
+
+../../../../src/xmlvect.o: ../../../../src/xmlvect.c
+	$(CC) -c ../../../../src/xmlvect.c -o ../../../../src/xmlvect.o $(CFLAGS)
+
+../../../../src/xmlpool.o: ../../../../src/xmlpool.c
+	$(CC) -c ../../../../src/xmlpool.c -o ../../../../src/xmlpool.o $(CFLAGS)
