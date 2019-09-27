@@ -116,7 +116,7 @@ void CBudgetPanelAdmin::OnTick()
 
 CBudgetPanelContainer::CBudgetPanelContainer(vgui::Panel *parent, const char *name) : PropertyPage(parent, name)
 {
-	LoadControlSettings("Admin/BudgetPanel.res", "PLATFORM");
+	LoadControlSettings("Admin/BudgetPanel.res", "CORE");
 	m_pBudgetPanelAdmin = new CBudgetPanelAdmin( this, "AdminBudgetPanel" );
 	m_pBudgetPanelAdmin->SetVisible( false );
 	InvalidateLayout();

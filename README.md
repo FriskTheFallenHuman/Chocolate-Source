@@ -28,6 +28,9 @@ Custom Source Engine branch based on Source Engine 2007 currently available on W
 * Remove Dx7 and 6 Support.
 * Protocol Version is 15.
 * L4D2 "Subtitles" system ( now the engine and game reads subtitles_%lang% instead of the old way )
+* Valve_Avi **=>** VideoServices
+* Remove P4 Support
+* Alpha Chanel Support For Bink Files
 
 ## :bookmark_tabs: Notes
 

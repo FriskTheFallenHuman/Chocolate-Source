@@ -427,7 +427,7 @@ void CGameUI::PlayGameStartupSound()
 void CGameUI::Start()
 {
 	// determine Steam location for configuration
-	if ( !FindPlatformDirectory( m_szPlatformDir, sizeof( m_szPlatformDir ) ) )
+	if ( !FindCoreDirectory( m_szPlatformDir, sizeof( m_szPlatformDir ) ) )
 		return;
 
 	if ( IsPC() )
@@ -445,11 +445,11 @@ void CGameUI::Start()
 		// user dialog configuration
 		vgui::system()->SetUserConfigFile("InGameDialogConfig.vdf", "CONFIG");
 
-		g_pFullFileSystem->AddSearchPath( "platform", "PLATFORM" );
+		g_pFullFileSystem->AddSearchPath( "core", "CORE" );
 	}
 
 	// localization
-	g_pVGuiLocalize->AddFile( "Resource/platform_%language%.txt");
+	g_pVGuiLocalize->AddFile( "Resource/core_%language%.txt");
 	g_pVGuiLocalize->AddFile( "Resource/vgui_%language%.txt");
 
 	Sys_SetLastError( SYS_NO_ERROR );
@@ -519,7 +519,7 @@ void CGameUI::ValidateCDKey()
 // Purpose: Finds which directory the platform resides in
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
-bool CGameUI::FindPlatformDirectory(char *platformDir, int bufferSize)
+bool CGameUI::FindCoreDirectory(char *platformDir, int bufferSize)
 {
 	platformDir[0] = '\0';
 
@@ -534,7 +534,7 @@ bool CGameUI::FindPlatformDirectory(char *platformDir, int bufferSize)
 				if ( lastslash )
 				{
 					*lastslash = 0;
-					Q_strncat(platformDir, "\\platform\\", bufferSize, COPY_ALL_CHARACTERS );
+					Q_strncat(platformDir, "\\core\\", bufferSize, COPY_ALL_CHARACTERS );
 					return true;
 				}
 			}
@@ -543,7 +543,7 @@ bool CGameUI::FindPlatformDirectory(char *platformDir, int bufferSize)
 		{
 			// xbox fetches the platform path from exisiting platform search path
 			// path to executeable is not correct for xbox remote configuration
-			if ( g_pFullFileSystem->GetSearchPath( "PLATFORM", false, platformDir, bufferSize ) )
+			if ( g_pFullFileSystem->GetSearchPath( "CORE", false, platformDir, bufferSize ) )
 			{
 				char *pSeperator = strchr( platformDir, ';' );
 				if ( pSeperator )
@@ -552,7 +552,7 @@ bool CGameUI::FindPlatformDirectory(char *platformDir, int bufferSize)
 			}
 		}
 
-		Error( "Unable to determine platform directory\n" );
+		Error( "Unable to determine core directory\n" );
 		return false;
 	}
 

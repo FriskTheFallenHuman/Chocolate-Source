@@ -20,7 +20,7 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 CServerInfoPanel::CServerInfoPanel(vgui::Panel *parent, const char *name) : CVarListPropertyPage(parent, name)
 {
-	LoadControlSettings("Admin/GamePanelInfo.res", "PLATFORM");
+	LoadControlSettings("Admin/GamePanelInfo.res", "CORE");
 	LoadVarList("Admin/MainServerConfig.vdf");
 	m_iLastUptimeDisplayed = 0;
 	m_flUpdateTime = 0.0f;

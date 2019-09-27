@@ -35,7 +35,7 @@ using namespace vgui;
 CVTFPreviewPanel::CVTFPreviewPanel( vgui::Panel *pParent, const char *pName ) :
 	BaseClass( pParent, pName )
 {
-	SetVTF( "//platform/materials/vgui/vtfnotloaded", true );
+	SetVTF( "//core/materials/vgui/vtfnotloaded", true );
 	m_nTextureID = MatSystemSurface()->CreateNewTextureID( false );
 }
 

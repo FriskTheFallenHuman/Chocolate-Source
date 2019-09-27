@@ -872,7 +872,7 @@ void CColorPickerPanel::OnColorSelected( KeyValues *data )
 void CColorPickerPanel::OnRadioButtonChecked( KeyValues *pKeyValues )
 {
 	// NOTE: The radio button command strings are defined in the colorpicker.res file
-	// in game/platform/resource.
+	// in game/core/resource.
 	vgui::Panel *pPanel = (vgui::Panel *)pKeyValues->GetPtr( "panel" );
 	if ( pPanel == m_pRedRadio )
 	{

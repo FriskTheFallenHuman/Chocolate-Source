@@ -58,7 +58,7 @@ CPlayerPanel::CPlayerPanel(vgui::Panel *parent, const char *name) : vgui::Proper
 	m_pPlayerContextMenu = new CPlayerContextMenu(this);
 	m_pPlayerContextMenu->SetVisible(false);
 
-	LoadControlSettings("Admin/PlayerPanel.res", "PLATFORM");
+	LoadControlSettings("Admin/PlayerPanel.res", "CORE");
 
 	m_pKickButton->SetCommand(new KeyValues("KickPlayer"));
 	m_pBanButton->SetCommand(new KeyValues("BanPlayer"));

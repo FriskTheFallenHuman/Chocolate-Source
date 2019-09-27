@@ -82,7 +82,7 @@
 #include "appframework/IAppSystemGroup.h"
 #include "scenefilecache/ISceneFileCache.h"
 #include "tier3/tier3.h"
-#include "avi/iavi.h"
+#include "videoservices/iavi.h"
 #include "ihudlcd.h"
 #include "toolframework_client.h"
 #include "hltvcamera.h"

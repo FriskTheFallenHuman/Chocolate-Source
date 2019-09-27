@@ -41,7 +41,7 @@
 #include "xbox/xbox_console.h"
 #include "xmp.h"
 
-#include "avi/ibik.h"
+#include "videoservices/ibik.h"
 extern IBik *bik;
 #endif
 /*

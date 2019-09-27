@@ -190,8 +190,8 @@ FSReturnCode_t FileSystem_LoadSearchPaths( CFSSearchPathsInit &initInfo );
 // paths (like Hammer does), you can call this to reset executable_path.
 FSReturnCode_t FileSystem_SetBasePaths( IFileSystem *pFileSystem );
 
-// Utility function to add the PLATFORM search path.
-void FileSystem_AddSearchPath_Platform( IFileSystem *pFileSystem, const char *szGameInfoPath );
+// Utility function to add the CORE search path.
+void FileSystem_AddSearchPath_Core( IFileSystem *pFileSystem, const char *szGameInfoPath );
 
 // See FSErrorMode_t. If you don't specify one here, then the default is FS_ERRORMODE_VCONFIG.
 void FileSystem_SetErrorMode( FSErrorMode_t errorMode = FS_ERRORMODE_VCONFIG );

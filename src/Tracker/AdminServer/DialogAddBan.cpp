@@ -42,7 +42,7 @@ CDialogAddBan::CDialogAddBan(vgui::Panel *parent) : Frame(parent, "DialogAddBan"
 	m_pTimeCombo->AddItem("#Add_Ban_Period_Days", NULL);
 	m_pTimeCombo->ActivateItem(defaultItem);
 
-	LoadControlSettings("Admin\\DialogAddBan.res", "PLATFORM");
+	LoadControlSettings("Admin\\DialogAddBan.res", "CORE");
 
 	SetTitle("#Add_Ban_Title", true);
 	SetSizeable(false);

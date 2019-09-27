@@ -57,7 +57,7 @@ void CVarEditDialog::Activate(vgui::Panel *actionSignalTarget, KeyValues *rules)
 	const char *type = m_pRules->GetString("type");
 	if (!stricmp(type, "enumeration"))
 	{
-		LoadControlSettings("Admin/VarEditDialog_ComboBox.res", "PLATFORM");
+		LoadControlSettings("Admin/VarEditDialog_ComboBox.res", "CORE");
 		m_pStringEdit->SetVisible(false);
 
 		// fill in the combo box
@@ -74,7 +74,7 @@ void CVarEditDialog::Activate(vgui::Panel *actionSignalTarget, KeyValues *rules)
 	}
 	else if (!stricmp(type, "customlist"))
 	{
-		LoadControlSettings("Admin/VarEditDialog_ComboBox.res", "PLATFORM");
+		LoadControlSettings("Admin/VarEditDialog_ComboBox.res", "CORE");
 		m_pStringEdit->SetVisible(false);
 
 		// fill in the combo box
@@ -121,7 +121,7 @@ void CVarEditDialog::Activate(vgui::Panel *actionSignalTarget, KeyValues *rules)
 	else
 	{
 		// normal string edit
-		LoadControlSettings("Admin/VarEditDialog_String.res", "PLATFORM");
+		LoadControlSettings("Admin/VarEditDialog_String.res", "CORE");
 		m_pComboEdit->SetVisible(false);
 		m_pStringEdit->SelectAllOnFirstFocus(true);
 		m_pStringEdit->SetText(m_pRules->GetString("value"));

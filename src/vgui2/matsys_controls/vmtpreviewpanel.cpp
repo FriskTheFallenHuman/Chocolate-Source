@@ -37,9 +37,9 @@ using namespace vgui;
 CVMTPreviewPanel::CVMTPreviewPanel( vgui::Panel *pParent, const char *pName ) :
 	BaseClass( pParent, pName )
 {
-	SetVMT( "//platform/materials/vgui/vtfnotloaded" );
+	SetVMT( "//core/materials/vgui/vtfnotloaded" );
 
-	m_pLightmapTexture.Init( "//platform/materials/debug/defaultlightmap", "editor" );
+	m_pLightmapTexture.Init( "//core/materials/debug/defaultlightmap", "editor" );
 	m_DefaultEnvCubemap.Init( "editor/cubemap", "editor", true );
 	m_LightDirection.Init( 0.0f, 1.0f, -1.0f );
 	m_LightColor.SetColor( 255, 255, 255, 255 );

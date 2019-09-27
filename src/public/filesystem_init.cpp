@@ -1340,22 +1340,22 @@ void FileSystem_ClearSteamEnvVars()
 }
 
 //-----------------------------------------------------------------------------
-// Adds the platform folder to the search path.
+// Adds the core folder to the search path.
 //-----------------------------------------------------------------------------
-void FileSystem_AddSearchPath_Platform( IFileSystem *pFileSystem, const char *szGameInfoPath )
+void FileSystem_AddSearchPath_Core( IFileSystem *pFileSystem, const char *szGameInfoPath )
 {
-	char platform[MAX_PATH];
+	char core[MAX_PATH];
 	if ( pFileSystem->IsSteam() )
 	{
 		// Steam doesn't support relative paths
-		Q_strncpy( platform, "platform", MAX_PATH );
+		Q_strncpy( core, "core", MAX_PATH );
 	}
 	else
 	{
-		Q_strncpy( platform, szGameInfoPath, MAX_PATH );
-		Q_StripTrailingSlash( platform );
-		Q_strncat( platform, "/../platform", MAX_PATH, MAX_PATH );
+		Q_strncpy( core, szGameInfoPath, MAX_PATH );
+		Q_StripTrailingSlash( core );
+		Q_strncat( core, "/../core", MAX_PATH, MAX_PATH );
 	}
 
-	pFileSystem->AddSearchPath( platform, "PLATFORM" );
+	pFileSystem->AddSearchPath( core, "CORE" );
 }

@@ -3816,7 +3816,7 @@ void CBaseFileSystem::CacheFileCRCs( const char *pPathname, ECacheCRCType eType,
 		return;
 	}
 
-	// Get a list of the unique search path names (mod, game, platform, etc).
+	// Get a list of the unique search path names (mod, game, core, etc).
 	CUtlDict<int,int> searchPathNames;
 	m_SearchPathsMutex.Lock();
 	for ( int i = 0; i <  m_SearchPaths.Count(); i++ )

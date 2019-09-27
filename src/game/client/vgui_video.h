@@ -12,7 +12,7 @@
 
 #include <vgui_controls/Panel.h>
 #include <vgui_controls/EditablePanel.h>
-#include "avi/ibik.h"
+#include "videoservices/ibik.h"
 
 
 class VideoPanel : public vgui::EditablePanel

@@ -624,7 +624,7 @@ bool CQueuedLoader::CResourceNameLessFunc::Less( const FileNameHandle_t &hFilena
 
 //-----------------------------------------------------------------------------
 // Resolve filenames to expected disc layout order as...
-// bsp, graphs, platform, hl2, episodic, ep2, tf, portal, non-zip
+// bsp, graphs, core, hl2, episodic, ep2, tf, portal, non-zip
 // see XGD layout.
 //-----------------------------------------------------------------------------
 int CQueuedLoader::CFileJobsLessFunc::GetLayoutOrderForFilename( const char *pFilename )
@@ -653,7 +653,7 @@ int CQueuedLoader::CFileJobsLessFunc::GetLayoutOrderForFilename( const char *pFi
 			order = 0;
 		}
 	}
-	else if ( V_stristr( pFilename, "\\platform\\zip" ) )
+	else if ( V_stristr( pFilename, "\\core\\zip" ) )
 	{
 		order = 2;
 	}

@@ -41,8 +41,8 @@ int StartVGUI( CreateInterfaceFn dedicatedFactory )
 {
 	// the "base dir" so we can scan mod name
 	g_pFullFileSystem->AddSearchPath(".", "MAIN");	
-	// the main platform dir
-	g_pFullFileSystem->AddSearchPath( "platform", "PLATFORM", PATH_ADD_TO_HEAD);
+	// the main core dir
+	g_pFullFileSystem->AddSearchPath( "core", "CORE", PATH_ADD_TO_HEAD);
 	
 	vgui::ivgui()->SetSleep(false);
 
@@ -56,10 +56,10 @@ int StartVGUI( CreateInterfaceFn dedicatedFactory )
 	}
 	else
 	{
-		// we're not running steam, so just put the config dir under the platform
-		Q_strncpy( szConfigDir, "platform/config", sizeof(szConfigDir));
+		// we're not running steam, so just put the config dir under the core
+		Q_strncpy( szConfigDir, "core/config", sizeof(szConfigDir));
 	}
-	g_pFullFileSystem->CreateDirHierarchy("config", "PLATFORM");
+	g_pFullFileSystem->CreateDirHierarchy("config", "CORE");
 	g_pFullFileSystem->AddSearchPath(szConfigDir, "CONFIG", PATH_ADD_TO_HEAD);
 
 	// initialize the user configuration file
@@ -75,7 +75,7 @@ int StartVGUI( CreateInterfaceFn dedicatedFactory )
 	vgui::scheme()->LoadSchemeFromFile("Resource/SourceScheme.res", NULL);
 
 	// localization
-	g_pVGuiLocalize->AddFile( "Resource/platform_%language%.txt" );
+	g_pVGuiLocalize->AddFile( "Resource/core_%language%.txt" );
 	g_pVGuiLocalize->AddFile( "Resource/vgui_%language%.txt" );
 	g_pVGuiLocalize->AddFile( "Admin/server_%language%.txt" );
 

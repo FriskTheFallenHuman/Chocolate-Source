@@ -36,8 +36,8 @@
 #include "vphysics_interface.h"
 #include "filesystem_init.h"
 #include "vstdlib/iprocessutils.h"
-#include "avi/iavi.h"
-#include "avi/ibik.h"
+#include "videoservices/iavi.h"
+#include "videoservices/ibik.h"
 #include "tier1/tier1.h"
 #include "tier2/tier2.h"
 #include "tier3/tier3.h"
@@ -611,8 +611,8 @@ bool CSourceAppSystemGroup::Create()
 		{ "studiorender.dll",		STUDIO_RENDER_INTERFACE_VERSION },
 		{ "vphysics.dll",			VPHYSICS_INTERFACE_VERSION },
 #if !defined( _X360 )
- 		{ "valve_avi.dll",			AVI_INTERFACE_VERSION },
- 		{ "valve_avi.dll",			BIK_INTERFACE_VERSION },
+ 		{ "videoservices.dll",		AVI_INTERFACE_VERSION },
+ 		{ "videoservices.dll",		BIK_INTERFACE_VERSION },
 #endif
 		// NOTE: This has to occur before vgui2.dll so it replaces vgui2's surface implementation
 		{ "vguimatsurface.dll",		VGUI_SURFACE_INTERFACE_VERSION },
@@ -704,12 +704,12 @@ bool CSourceAppSystemGroup::PreInit()
 
 	if ( IsPC() || !IsX360() )
 	{
-		fsInfo.m_pFileSystem->AddSearchPath( "platform", "PLATFORM" );
+		fsInfo.m_pFileSystem->AddSearchPath( "core", "CORE" );
 	}
 	else
 	{
 		// 360 needs absolute paths
-		FileSystem_AddSearchPath_Platform( g_pFullFileSystem, steamInfo.m_GameInfoPath );
+		FileSystem_AddSearchPath_Core( g_pFullFileSystem, steamInfo.m_GameInfoPath );
 	}
 
 	if ( IsPC() )

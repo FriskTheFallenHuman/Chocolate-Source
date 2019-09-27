@@ -19,7 +19,7 @@ using namespace vgui;
 CServerConfigPanel::CServerConfigPanel(vgui::Panel *parent, const char *name, const char *mod) : CVarListPropertyPage(parent, name)
 {
 	SetBounds(0, 0, 500, 170);
-	LoadControlSettings("Admin\\ServerConfigPanel.res", "PLATFORM");
+	LoadControlSettings("Admin\\ServerConfigPanel.res", "CORE");
 
 	// load our rules
 	if (!LoadVarList("scripts/GameServerConfig.vdf"))

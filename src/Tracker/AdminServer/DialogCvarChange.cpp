@@ -33,7 +33,7 @@ CDialogCvarChange::CDialogCvarChange(vgui::Panel *parent) : Frame(parent, "Dialo
 	m_pCvarEntry = new TextEntry(this, "CvarEntry");
 	m_pOkayButton = new Button(this, "OkayButton", "#Okay_Button");
 
-	LoadControlSettings("Admin/DialogCvarChange.res", "PLATFORM");
+	LoadControlSettings("Admin/DialogCvarChange.res", "CORE");
 
 	SetTitle("#Cvar_Title", true);
 

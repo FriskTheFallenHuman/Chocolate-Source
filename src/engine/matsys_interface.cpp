@@ -1110,7 +1110,7 @@ void InitStartupScreen()
 	CMatRenderContextPtr pRenderContext( g_pMaterialSystem );
 	pRenderContext->SetNonInteractiveTempFullscreenBuffer( pTexture, MATERIAL_NON_INTERACTIVE_MODE_STARTUP );
 
-	pTexture = materials->FindTexture( "//platform/materials/engine/box", TEXTURE_GROUP_OTHER );
+	pTexture = materials->FindTexture( "//core/materials/engine/box", TEXTURE_GROUP_OTHER );
 
 	KeyValues *modinfo = new KeyValues("ModInfo");
 	if ( modinfo->LoadFromFile( g_pFileSystem, "gameinfo.txt" ) )

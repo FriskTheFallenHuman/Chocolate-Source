@@ -116,7 +116,7 @@ private:
 	virtual void SetSecondaryProgressBar(float progress /* range [0..1] */);
 	virtual void SetSecondaryProgressBarText(const char *statusText);
 
-	bool FindPlatformDirectory(char *platformDir, int bufferSize);
+	bool FindCoreDirectory(char *platformDir, int bufferSize);
 	void GetUpdateVersion( char *pszProd, char *pszVer);
 	void ValidateCDKey();
 

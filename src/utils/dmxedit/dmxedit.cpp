@@ -49,8 +49,6 @@
 #include "movieobjects/dmemodel.h"
 #include "tier1/utlstring.h"
 #include "tier1/utlbuffer.h"
-#include "tier2/p4helpers.h"
-
 
 // Lua includes
 #include <lua.h>
@@ -145,8 +143,6 @@ bool CDmxEdit::Load( const char *pFilename, const CObjType &loadType /* = DIST_A
 			Error( "// ERROR: DMX Load of \"%s\" Failed\n", pFilename );
 			return false;
 		}
-
-		g_p4factory->AccessFile( pFilename )->Add();
 
 		// Find the first mesh with any deltas
 		// Look for model
@@ -299,8 +295,6 @@ bool CDmxEdit::Import( const char *pFilename, const char *pParentName )
 		return false;
 	}
 
-	g_p4factory->AccessFile( pFilename )->Add();
-
 	CDmeDag *pSrcModel = pRoot->GetValueElement< CDmeDag >( "model" );
 	if ( !pSrcModel )
 	{
@@ -420,8 +414,6 @@ bool CDmxEdit::ImportComboRules( const char *pFilename, bool bOverwrite /* = tru
 		Error( "// ERROR: ImportComboRules( \"%s\" ) Failed - File Cannot Be Read\n", pFilename );
 		return false;
 	}
-
-	g_p4factory->AccessFile( pFilename )->Add();
 
 	// Try to find a combination system in the file
 	CDmeCombinationOperator *pCombo = CastElement< CDmeCombinationOperator >( pRoot );
@@ -1269,11 +1261,6 @@ bool CDmxEdit::Save( const char *pFilename, const CObjType &saveType /* = ABSOLU
 	if ( sLen > 4 && !Q_stricmp( pFilename + sLen - 4, ".dmx" ) )
 	{
 		Msg( "// DMX Save( \"%s\" );\n", pFilename );
-		retVal = g_p4factory->AccessFile( pFilename )->Edit();
-		if ( !retVal )
-		{
-			retVal = g_p4factory->AccessFile( pFilename )->Add();
-		}
 
 		retVal = g_pDataModel->SaveToFile( pFilename, NULL, "keyvalues2", "model", m_pRoot );
 		if ( !retVal )
@@ -1354,20 +1341,12 @@ bool CDmxEdit::Merge( const char *pInFilename, const char *pOutFilename )
 		return false;
 	}
 
-	g_p4factory->AccessFile( pInFilename )->Add();
-
 	const bool retVal = CDmMeshUtils::Merge( m_pMesh, pRoot );
 
 	CDisableUndoScopeGuard guard1;
 	if ( retVal )
 	{
 		Msg( "// Merge( \"%s\", \"%s\" );\n", pInFilename, pOutFilename );
-		bool bPerforce = g_p4factory->AccessFile( pOutFilename )->Edit();
-		if ( !bPerforce )
-		{
-			bPerforce = g_p4factory->AccessFile( pOutFilename )->Add();
-		}
-
 		if ( !g_pDataModel->SaveToFile( pOutFilename, NULL, "keyvalues2", "model", pRoot ) )
 		{
 			Error( "// ERROR: Merge( \"%s\", \"%s\" ); Failed - \"%s\" Unchanged.  Cannot write file.\n", pInFilename, pOutFilename, pOutFilename );
@@ -1636,7 +1615,6 @@ bool CDmxEdit::CreateExpressionFilesFromCachedPresets() const
 		const char *pPresetFilename = m_presetCache.String( i );
 
 		CDmElement *pRoot = NULL;
-		g_p4factory->AccessFile( pPresetFilename )->Add();
 		g_pDataModel->RestoreFromFile( pPresetFilename, NULL, NULL, &pRoot );
 
 		if ( !pRoot )
@@ -1663,22 +1641,12 @@ bool CDmxEdit::CreateExpressionFilesFromCachedPresets() const
 			Q_FixSlashes( buf1 );
 			g_pFullFileSystem->CreateDirHierarchy( buf1 );
 
-			if ( !g_p4factory->AccessFile( buf )->Edit() )
-			{
-				g_p4factory->AccessFile( buf )->Add();
-			}
-
 			pPresetGroup->ExportToTXT( buf, NULL, pComboOp );
 
 			Q_SetExtension( buf, ".vfe", sizeof( buf ) );
 			Q_ExtractFilePath( buf, buf1, sizeof( buf1 ) );
 			Q_FixSlashes( buf1 );
 			g_pFullFileSystem->CreateDirHierarchy( buf1 );
-
-			if ( !g_p4factory->AccessFile( buf )->Edit() )
-			{
-				g_p4factory->AccessFile( buf )->Add();
-			}
 
 			pPresetGroup->ExportToVFE( buf, NULL, pComboOp );
 		}
@@ -1688,7 +1656,6 @@ bool CDmxEdit::CreateExpressionFilesFromCachedPresets() const
 
 	return bRetVal;
 }
-
 
 //-----------------------------------------------------------------------------
 //
@@ -1701,7 +1668,6 @@ bool CDmxEdit::FixPresetFile(
 	Msg( "// FixPresetFile( \"%s\" );\n", pPresetFilename );
 
 	CDmElement *pRoot = NULL;
-	g_p4factory->AccessFile( pPresetFilename )->Add();
 	g_pDataModel->RestoreFromFile( pPresetFilename, NULL, NULL, &pRoot );
 
 	if ( !pRoot )
@@ -1815,13 +1781,7 @@ bool CDmxEdit::FixPresetFile(
 		}
 	}
 
-	bool bStatus = g_p4factory->AccessFile( pPresetFilename )->Edit();
-	if ( !bStatus )
-	{
-		g_p4factory->AccessFile( pPresetFilename )->Add();
-	}
-
-	bStatus = g_pDataModel->SaveToFile( pPresetFilename, NULL, "keyvalues2", "preset", pRoot );
+	bool bStatus = g_pDataModel->SaveToFile( pPresetFilename, NULL, "keyvalues2", "preset", pRoot );
 	if ( !bStatus )
 	{
 		Error( "// FixPresetFile( \"%s\" ); - Couldn't Save File via DataModel\n", pPresetFilename );
@@ -1831,7 +1791,6 @@ bool CDmxEdit::FixPresetFile(
 
 	return bStatus;
 }
-
 
 void ScaleDeltaPositions( const CDmrArrayConst< Vector > &bindPosData, CDmeVertexDeltaData *pDelta, float sx, float sy, float sz )
 {

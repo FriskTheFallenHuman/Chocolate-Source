@@ -12,7 +12,7 @@
 
 #include "interface.h"
 #include "soundflags.h"
-#include "avi/iavi.h"
+#include "videoservices/iavi.h"
 #include "ispatialpartition.h"
 
 class CViewSetup;

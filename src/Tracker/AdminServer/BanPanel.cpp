@@ -59,7 +59,7 @@ CBanPanel::CBanPanel(vgui::Panel *parent, const char *name) : PropertyPage(paren
 	m_flUpdateTime = 0.0f;
 	m_bPageViewed = false;
 
-	LoadControlSettings("Admin/BanPanel.res", "PLATFORM");
+	LoadControlSettings("Admin/BanPanel.res", "CORE");
 }
 
 //-----------------------------------------------------------------------------

@@ -48,7 +48,7 @@ CVMTPanel::CVMTPanel( vgui::Panel *pParent, const char *pName ) : BaseClass( pPa
 
 	LookAt( SPHERE_RADIUS );
 
-	m_pLightmapTexture.Init( "//platform/materials/debug/defaultlightmap", "editor" );
+	m_pLightmapTexture.Init( "//core/materials/debug/defaultlightmap", "editor" );
 	m_DefaultEnvCubemap.Init( "editor/cubemap", "editor", true );
 }
 

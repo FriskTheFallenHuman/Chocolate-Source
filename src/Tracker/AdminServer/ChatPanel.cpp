@@ -34,7 +34,7 @@ CChatPanel::CChatPanel(vgui::Panel *parent, const char *name) : PropertyPage(par
 	m_pSendChatButton->SetCommand(new KeyValues("SendChat"));
 	m_pSendChatButton->SetAsDefaultButton(true);
 
-	LoadControlSettings("Admin/ChatPanel.res", "PLATFORM");
+	LoadControlSettings("Admin/ChatPanel.res", "CORE");
 }
 
 //-----------------------------------------------------------------------------

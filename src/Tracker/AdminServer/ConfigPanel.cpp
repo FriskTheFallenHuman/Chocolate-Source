@@ -55,7 +55,7 @@ CConfigPanel::CConfigPanel(vgui::Panel *parent, bool autorefresh,bool savercon,i
 
 	SetTitle("My servers - Options",true);
 
-	LoadControlSettings("Admin\\ConfigPanel.res", "PLATFORM");
+	LoadControlSettings("Admin\\ConfigPanel.res", "CORE");
 
 	m_pRefreshCheckButton->SetSelected(autorefresh);
 	m_pRconCheckButton->SetSelected(savercon);

@@ -12,7 +12,7 @@
 #include "iprediction.h"
 #include "eax.h"
 #include "tier0/icommandline.h"
-#include "avi/ibik.h"
+#include "videoservices/ibik.h"
 #include "../../sys_dll.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

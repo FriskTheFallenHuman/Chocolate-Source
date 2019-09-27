@@ -56,7 +56,7 @@ CParticleSystemPanel::CParticleSystemPanel( vgui::Panel *pParent, const char *pN
 
 	LookAt( SPHERE_RADIUS );
 
-	m_pLightmapTexture.Init( "//platform/materials/debug/defaultlightmap", "editor" );
+	m_pLightmapTexture.Init( "//core/materials/debug/defaultlightmap", "editor" );
 	m_DefaultEnvCubemap.Init( "editor/cubemap", "editor", true );
 
 	for ( int i = 0; i < MAX_PARTICLE_CONTROL_POINTS; ++i )

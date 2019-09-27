@@ -244,11 +244,6 @@ $Project "mdllib"
 	"mdllib\mdllib.vpc" [$WIN32]
 }
 
-$Project "parsifal"
-{
-	"libparsifal-0.8.3\win32\vc6\parsifal.vpc" [$WIN32]
-}
-
 $Project "pcffix"
 {
 	"utils\pcffix\pcffix.vpc" [$WIN32]
@@ -394,9 +389,9 @@ $Project "unitlib"
 	"unitlib\unitlib.vpc" [$WIN32]
 }
 
-$Project "valve_avi"
+$Project "videoservices"
 {
-	"avi\valve_avi.vpc" [$WIN32]
+	"videoservices\videoservices.vpc" [$WIN32]
 }
 
 $Project "vaudio_miles"

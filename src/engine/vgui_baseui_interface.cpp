@@ -534,7 +534,7 @@ CEngineVGui::~CEngineVGui()
 
 
 //-----------------------------------------------------------------------------
-// add all the base search paths used by VGUI (platform, skins directory, language dirs)
+// add all the base search paths used by VGUI (core, skins directory, language dirs)
 //-----------------------------------------------------------------------------
 bool CEngineVGui::SetVGUIDirectories()
 {
@@ -546,7 +546,7 @@ bool CEngineVGui::SetVGUIDirectories()
 	Sys_GetRegKeyValue("Software\\Valve\\Steam", "Skin", skin, sizeof(skin), "");
 	if (strlen(skin) > 0)
 	{
-		sprintf( temp, "%s/platform/skins/%s", GetBaseDirectory(), skin );
+		sprintf( temp, "%s/core/skins/%s", GetBaseDirectory(), skin );
 		g_pFileSystem->AddSearchPath( temp, "SKIN" );
 	}
 #endif

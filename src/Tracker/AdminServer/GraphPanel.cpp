@@ -83,7 +83,7 @@ CGraphPanel::CGraphPanel(vgui::Panel *parent, const char *name) : PropertyPage(p
 	m_pFPSButton->SetSelected(false);
 	m_pPINGButton->SetSelected(false);
 
-	LoadControlSettings("Admin/GraphPanel.res", "PLATFORM");
+	LoadControlSettings("Admin/GraphPanel.res", "CORE");
 
 	int w,h;
 	m_pGraphsPanel->GetSize(w,h);

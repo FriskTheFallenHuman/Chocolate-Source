@@ -12299,11 +12299,11 @@ HXUIFONT CShaderAPIDx8::OpenTrueTypeFont( const char *pFontname, int tall, int s
 		{"hl2ep1",			"episodic/resource/hl2ep1.ttf"},
 		{"halflife2",		"hl2/resource/halflife2.ttf"},
 		{"hl2cross",		"hl2/resource/HL2Crosshairs.ttf"},
-		{"courier new",		"platform/vgui/fonts/cour.ttf"},
-		{"times new roman",	"platform/vgui/fonts/times.ttf"},
-		{"trebuchet ms",	"platform/vgui/fonts/trebuc.ttf"},
-		{"verdana",			"platform/vgui/fonts/verdana.ttf"},
-		{"tahoma",			"platform/vgui/fonts/tahoma.ttf"},
+		{"courier new",		"core/vgui/fonts/cour.ttf"},
+		{"times new roman",	"core/vgui/fonts/times.ttf"},
+		{"trebuchet ms",	"core/vgui/fonts/trebuc.ttf"},
+		{"verdana",			"core/vgui/fonts/verdana.ttf"},
+		{"tahoma",			"core/vgui/fonts/tahoma.ttf"},
 	};
 
 	// remap typeface to diskname

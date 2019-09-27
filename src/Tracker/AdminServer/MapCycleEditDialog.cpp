@@ -39,7 +39,7 @@ CMapCycleEditDialog::CMapCycleEditDialog(vgui::Panel *parent, const char *name) 
 	m_UpArrow = new Button(this, "UpButton", "");
 	m_DownArrow = new Button(this, "DownButton", "");
 
-	LoadControlSettings("Admin/MapCycleEditDialog.res", "PLATFORM");
+	LoadControlSettings("Admin/MapCycleEditDialog.res", "CORE");
 }
 
 //-----------------------------------------------------------------------------

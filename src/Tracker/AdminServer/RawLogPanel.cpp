@@ -37,7 +37,7 @@ CRawLogPanel::CRawLogPanel(vgui::Panel *parent, const char *name) : vgui::Proper
 	SetSize(200, 100);
 	m_pConsole = new CConsolePanel( this, "Console", false );
 	
-	LoadControlSettings("Admin\\RawLogPanel.res", "PLATFORM");
+	LoadControlSettings("Admin\\RawLogPanel.res", "CORE");
 }
 
 //-----------------------------------------------------------------------------

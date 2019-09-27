@@ -79,43 +79,43 @@ void CStudioRender::InitDebugMaterials( void )
 {
 #ifdef _WIN32
 	m_pMaterialMRMWireframe = 
-		g_pMaterialSystem->FindMaterial( "//platform/materials/debug/debugmrmwireframe", TEXTURE_GROUP_OTHER, true );
+		g_pMaterialSystem->FindMaterial( "//core/materials/debug/debugmrmwireframe", TEXTURE_GROUP_OTHER, true );
 	m_pMaterialMRMWireframe->IncrementReferenceCount();
 
 	m_pMaterialMRMWireframeZBuffer = 
-		g_pMaterialSystem->FindMaterial( "//platform/materials/debug/debugmrmwireframezbuffer", TEXTURE_GROUP_OTHER, true );
+		g_pMaterialSystem->FindMaterial( "//core/materials/debug/debugmrmwireframezbuffer", TEXTURE_GROUP_OTHER, true );
 	m_pMaterialMRMWireframeZBuffer->IncrementReferenceCount();
 
 	m_pMaterialMRMNormals = 
-		g_pMaterialSystem->FindMaterial( "//platform/materials/debug/debugmrmnormals", TEXTURE_GROUP_OTHER, true );
+		g_pMaterialSystem->FindMaterial( "//core/materials/debug/debugmrmnormals", TEXTURE_GROUP_OTHER, true );
 	m_pMaterialMRMNormals->IncrementReferenceCount();
 
 	m_pMaterialTangentFrame = 
-		g_pMaterialSystem->FindMaterial( "//platform/materials/debug/debugvertexcolor", TEXTURE_GROUP_OTHER, true );
+		g_pMaterialSystem->FindMaterial( "//core/materials/debug/debugvertexcolor", TEXTURE_GROUP_OTHER, true );
 	m_pMaterialTangentFrame->IncrementReferenceCount();
 
 	m_pMaterialTranslucentModelHulls = 
-		g_pMaterialSystem->FindMaterial( "//platform/materials/debug/debugtranslucentmodelhulls", TEXTURE_GROUP_OTHER, true );
+		g_pMaterialSystem->FindMaterial( "//core/materials/debug/debugtranslucentmodelhulls", TEXTURE_GROUP_OTHER, true );
 	m_pMaterialTranslucentModelHulls->IncrementReferenceCount();
 
 	m_pMaterialSolidModelHulls = 
-		g_pMaterialSystem->FindMaterial( "//platform/materials/debug/debugsolidmodelhulls", TEXTURE_GROUP_OTHER, true );
+		g_pMaterialSystem->FindMaterial( "//core/materials/debug/debugsolidmodelhulls", TEXTURE_GROUP_OTHER, true );
 	m_pMaterialSolidModelHulls->IncrementReferenceCount();
 
 	m_pMaterialAdditiveVertexColorVertexAlpha = 
-		g_pMaterialSystem->FindMaterial( "//platform/materials/debug/additivevertexcolorvertexalpha", TEXTURE_GROUP_OTHER, true );
+		g_pMaterialSystem->FindMaterial( "//core/materials/debug/additivevertexcolorvertexalpha", TEXTURE_GROUP_OTHER, true );
 	m_pMaterialAdditiveVertexColorVertexAlpha->IncrementReferenceCount();
 
 	m_pMaterialModelBones = 
-		g_pMaterialSystem->FindMaterial( "//platform/materials/debug/debugmodelbones", TEXTURE_GROUP_OTHER, true );
+		g_pMaterialSystem->FindMaterial( "//core/materials/debug/debugmodelbones", TEXTURE_GROUP_OTHER, true );
 	m_pMaterialModelBones->IncrementReferenceCount();
 
 	m_pMaterialModelEnvCubemap =
-		g_pMaterialSystem->FindMaterial( "//platform/materials/debug/env_cubemap_model", TEXTURE_GROUP_OTHER, true );
+		g_pMaterialSystem->FindMaterial( "//core/materials/debug/env_cubemap_model", TEXTURE_GROUP_OTHER, true );
 	m_pMaterialModelEnvCubemap->IncrementReferenceCount();
 	
 	m_pMaterialWorldWireframe = 
-		g_pMaterialSystem->FindMaterial( "//platform/materials/debug/debugworldwireframe", TEXTURE_GROUP_OTHER, true );
+		g_pMaterialSystem->FindMaterial( "//core/materials/debug/debugworldwireframe", TEXTURE_GROUP_OTHER, true );
 	m_pMaterialWorldWireframe->IncrementReferenceCount();
 
 	if( g_pMaterialSystemHardwareConfig->GetDXSupportLevel() >= 90 )

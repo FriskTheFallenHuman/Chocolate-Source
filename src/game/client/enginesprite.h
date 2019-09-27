@@ -12,8 +12,8 @@
 #endif
 
 #include "mathlib/vector.h"
-#include "avi/iavi.h"
-#include "avi/ibik.h"
+#include "videoservices/iavi.h"
+#include "videoservices/ibik.h"
 
 
 //-----------------------------------------------------------------------------
