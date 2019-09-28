@@ -23,7 +23,7 @@ $Linux
 	-$File  "$SRCDIR\lib\public\steam_api.lib"
 	-$File	"$SRCDIR\lib\public\vtf.lib"
 	-$File	"$SRCDIR\lib\public\vgui_controls.lib"
-	-$File	"$SRCDIR\lib\common\binkw32.lib"
+	-$File	"$SRCDIR\thirdparty\BinkSDK\binkw32.lib"
 
 	// Libs we do want.
 	$File	"$SRCDIR\lib\linux\FindSteamServers.a"
@@ -1200,7 +1200,7 @@ $Project "engine"
 		$File	"$SRCDIR\DX9SDK\lib\dsound.lib"
 		$File	"$SRCDIR\DX9SDK\lib\dxguid.lib"
 		$File	"$SRCDIR\lib\public\vgui_controls.lib"
-		$File	"$SRCDIR\lib\common\binkw32.lib"
+		$File	"$SRCDIR\thirdparty\BinkSDK\binkw32.lib"
 	}
 
 	$Folder	"Link libraries" [$X360]
