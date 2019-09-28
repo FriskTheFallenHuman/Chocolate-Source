@@ -22,12 +22,10 @@
 #include "shaderlib/cshader.h"
 #include "tier1/convar.h"
 #include "tier1/KeyValues.h"
-#include "shader_dll_verify.h"
 #include "tier0/vprof.h"
 
 // NOTE: This must be the last file included!
 #include "tier0/memdbgon.h"
-
 
 //#define DEBUG_DEPTH 1
 
@@ -61,11 +59,9 @@ public:
 	// Methods of IShaderSystemInternal
 	virtual void		Init();
 	virtual void		Shutdown();
-	virtual void		ModInit();
-	virtual void		ModShutdown();
 
 	virtual bool		LoadShaderDLL( const char *pFullPath );
-	virtual bool		LoadShaderDLL( const char *pFullPath, const char *pPathID, bool bModShaderDLL );
+	virtual bool		LoadShaderDLL( const char *pFullPath, const char *pPathID );
 	virtual void		UnloadShaderDLL( const char *pFullPath );
 
 	virtual IShader*	FindShader( char const* pShaderName );
@@ -99,22 +95,14 @@ private:
 		CSysModule *m_hInstance;
 		IShaderDLLInternal *m_pShaderDLL;
 		ShaderDLL_t m_hShaderDLL;
-		
-		// True if this is a mod's shader DLL, in which case it's not allowed to 
-		// override any existing shader names.
-		bool m_bModShaderDLL;
+
 		CUtlDict< IShader *, unsigned short >	m_ShaderDict; 
 	};
 
 private:
-	// hackhack: remove this when VAC2 is online.
-	void VerifyBaseShaderDLL( CSysModule *pModule );
 
 	// Load up the shader DLLs...
 	void LoadAllShaderDLLs();
-
-	// Load the "mshader_" DLLs.
-	void LoadModShaderDLLs( int dxSupportLevel );
 
 	// Unload all the shader DLLs...
 	void UnloadAllShaderDLLs();
@@ -123,7 +111,7 @@ private:
 	void SetupShaderDictionary( int nShaderDLLIndex );
 
 	// Cleans up the shader dictionary.
-	void CleanupShaderDictionary( int nShaderDLLIndex );
+	void CleanupShaderDictionary( int nShaderDLLIndex ) {}
 
 	// Finds an already loaded shader DLL
 	int FindShaderDLL( const char *pFullPath );
@@ -132,8 +120,7 @@ private:
 	void UnloadShaderDLL( int nShaderDLLIndex );
 
 	// Sets up the current ShaderState_t for rendering
-	void PrepForShaderDraw( IShader *pShader, IMaterialVar** ppParams, 
-		ShaderRenderState_t* pRenderState, int modulation );
+	void PrepForShaderDraw( IShader *pShader, IMaterialVar** ppParams, ShaderRenderState_t* pRenderState, int modulation );
 	void DoneWithShaderDraw();
 
 	// Initializes state snapshots
@@ -266,36 +253,6 @@ void CShaderSystem::Shutdown()
 	UnloadAllShaderDLLs();
 }
 
-
-//-----------------------------------------------------------------------------
-// Load/unload mod-specific shader DLLs
-//-----------------------------------------------------------------------------
-void CShaderSystem::ModInit()
-{
-	// Load up standard shader DLLs...
-	int dxSupportLevel = HardwareConfig()->GetMaxDXSupportLevel();
-	Assert( dxSupportLevel >= 60 );
-	dxSupportLevel /= 10;
-
-	LoadModShaderDLLs( dxSupportLevel );
-}
-
-
-void CShaderSystem::ModShutdown()
-{
-	// Unload only MOD dlls
-	for ( int i = m_ShaderDLLs.Count(); --i >= 0; )
-	{
-		if ( m_ShaderDLLs[i].m_bModShaderDLL )
-		{
-			UnloadShaderDLL(i);
-			delete[] m_ShaderDLLs[i].m_pFileName;
-			m_ShaderDLLs.Remove( i );
-		}
-	}
-}
-
-
 //-----------------------------------------------------------------------------
 // Load up the shader DLLs...
 //-----------------------------------------------------------------------------
@@ -312,85 +269,53 @@ void CShaderSystem::LoadAllShaderDLLs( )
 	m_ShaderDLLs[i].m_pFileName[0]  = 0;
 	m_ShaderDLLs[i].m_hInstance     = NULL;
 	m_ShaderDLLs[i].m_pShaderDLL    = GetShaderDLLInternal();
-	m_ShaderDLLs[i].m_bModShaderDLL = false;
 
 	// Add the shaders to the dictionary of shaders...
 	SetupShaderDictionary( i );
 
 #if defined( _WIN32 )
-	// 360 has the the debug shaders in its dx9 dll
-	if ( IsPC() || !IsX360() )
-	{
-		// Always need the debug shaders
-		LoadShaderDLL( "stdshader_dbg" );
-	}
-
 	// Load up standard shader DLLs...
 	int dxSupportLevel = HardwareConfig()->GetMaxDXSupportLevel();
 	Assert( dxSupportLevel >= 60 );
 	dxSupportLevel /= 10;
 
 	// 360 only supports its dx9 dll
-	int dxStart = IsX360() ? 9 : 6;
+	int dxStart = IsX360() ? 9 : 8;
 	char buf[32];
 	for ( i = dxStart; i <= dxSupportLevel; ++i )
 	{
 		Q_snprintf( buf, sizeof( buf ), "stdshader_dx%d", i );
 		LoadShaderDLL( buf );
+		Msg( "Loanding stdshader_dx%s shader dll", buf );
 	}
-
-	const char *pShaderName = NULL;
-#ifdef _DEBUG
-	pShaderName = CommandLine()->ParmValue( "-shader" );
-#endif
-	if ( !pShaderName )
-	{
-		pShaderName = HardwareConfig()->GetHWSpecificShaderDLLName();
-	}
-	if ( pShaderName )
-	{
-		LoadShaderDLL( pShaderName );
-	}
-
-#ifdef _DEBUG
-	// For fast-iteration debugging
-	if ( CommandLine()->FindParm( "-testshaders" ) )
-	{
-		LoadShaderDLL( "shader_test" );
-	}
-#endif
-#endif // _WIN32
-}
-
-void CShaderSystem::LoadModShaderDLLs( int dxSupportLevel )
-{
-	if ( IsX360() )
-		return;
-
-	const char *pModShaderPathID = "GAMEBIN";
 
 	// First load the ones with dx_ prefix.
-	char buf[256];
-
-	int dxStart = 6;
-	for ( int i = dxStart; i <= dxSupportLevel; ++i )
-	{
-		Q_snprintf( buf, sizeof( buf ), "game_shader_dx%d", i );
-		LoadShaderDLL( buf, pModShaderPathID, true );
-	}
+	char buf2[256];
 
 	// Now load the ones with any dx_ prefix.
 	FileFindHandle_t findHandle;
-	const char *pFilename = g_pFullFileSystem->FindFirstEx( "game_shader_generic*", pModShaderPathID, &findHandle );
+	const char *pFilename = g_pFullFileSystem->FindFirstEx( "stdshader_generic*", "GAMEBIN", &findHandle );
 	while ( pFilename )
 	{
-		Q_snprintf( buf, sizeof( buf ), "%s", pFilename );
-		LoadShaderDLL( buf, pModShaderPathID, true );
-
+		Q_snprintf( buf2, sizeof( buf2 ), "%s", pFilename );
+		LoadShaderDLL( buf2 );
+		Msg( "Loanding stdshader_generic%s generic shader dll", findHandle );
 		pFilename = g_pFullFileSystem->FindNext( findHandle );
 	}
-}
 
+	const char *pShaderName = NULL;
+	pShaderName = CommandLine()->ParmValue( "-shader" );
+
+	if ( !pShaderName )
+		pShaderName = HardwareConfig()->GetHWSpecificShaderDLLName();
+
+	if ( pShaderName )
+	{
+		LoadShaderDLL( pShaderName );
+		Msg( "Loanding %s custom shader dll", pShaderName);
+	}
+#endif // _WIN32
+}
 
 //-----------------------------------------------------------------------------
 // Unload all the shader DLLs...
@@ -409,74 +334,24 @@ void CShaderSystem::UnloadAllShaderDLLs()
 	m_ShaderDLLs.RemoveAll();
 }
 
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
 bool CShaderSystem::LoadShaderDLL( const char *pFullPath )
 {
-	return LoadShaderDLL( pFullPath, NULL, false );
-}
-
-// HACKHACK: remove me when VAC2 is online.
-#if defined( _WIN32 ) && !defined( _X360 )
-// Instead of including windows.h
-extern "C"
-{
-	extern void * __stdcall GetProcAddress( void *hModule, const char *pszProcName );
-};
-#endif
-
-void CShaderSystem::VerifyBaseShaderDLL( CSysModule *pModule )
-{
-#if defined( _WIN32 ) && !defined( _X360 )
-	const char *pErrorStr = "Corrupt save data settings.";
-
-	unsigned char *testData1 = new unsigned char[SHADER_DLL_VERIFY_DATA_LEN1];
-
-	ShaderDLLVerifyFn fn = (ShaderDLLVerifyFn)GetProcAddress( (void *)pModule, SHADER_DLL_FNNAME_1 );
-	if ( !fn )
-		Error( pErrorStr );
-
-	IShaderDLLVerification *pVerify;
-	char *pPtr = (char*)(void*)&pVerify;
-	pPtr -= SHADER_DLL_VERIFY_DATA_PTR_OFFSET;
-	fn( pPtr );
-
-	// Test the first CRC.
-	CRC32_t testCRC;
-	CRC32_Init( &testCRC );
-	CRC32_ProcessBuffer( &testCRC, testData1, SHADER_DLL_VERIFY_DATA_LEN1 );
-	CRC32_ProcessBuffer( &testCRC, &pModule, 4 );
-	CRC32_ProcessBuffer( &testCRC, &pVerify, 4 );
-	CRC32_Final( &testCRC );
-	if ( testCRC != pVerify->Function1( testData1 - SHADER_DLL_VERIFY_DATA_PTR_OFFSET ) )
-		Error( pErrorStr );
-
-	// Test the next one.
-	unsigned char digest[MD5_DIGEST_LENGTH];
-	MD5Context_t md5Context;
-	MD5Init( &md5Context );
-	MD5Update( &md5Context, testData1 + SHADER_DLL_VERIFY_DATA_PTR_OFFSET, SHADER_DLL_VERIFY_DATA_LEN1 - SHADER_DLL_VERIFY_DATA_PTR_OFFSET );
-	MD5Final( digest, &md5Context );
-	pVerify->Function2( 2, 3, 3 ); // fn2 is supposed to place the result in testData1.
-	if ( memcmp( digest, testData1, MD5_DIGEST_LENGTH ) != 0 )
-		Error( pErrorStr );
-
-	pVerify->Function5();
-
-	delete [] testData1;
-#endif
+	return LoadShaderDLL( pFullPath, "GAMEBIN" );
 }
 
 //-----------------------------------------------------------------------------
 // Methods related to reading in shader DLLs
 //-----------------------------------------------------------------------------
-bool CShaderSystem::LoadShaderDLL( const char *pFullPath, const char *pPathID, bool bModShaderDLL )
+bool CShaderSystem::LoadShaderDLL( const char *pFullPath, const char *pPathID )
 {
 	if ( !pFullPath && !pFullPath[0] )
 		return true;
 
 	// Load the new shader
 	bool bValidatedDllOnly = true;
-	if ( bModShaderDLL )
-		bValidatedDllOnly = false;
 
 	CSysModule *hInstance = g_pFullFileSystem->LoadModule( pFullPath, pPathID, bValidatedDllOnly );
 	if ( !hInstance )
@@ -495,13 +370,6 @@ bool CShaderSystem::LoadShaderDLL( const char *pFullPath, const char *pPathID, b
 	{
 		g_pFullFileSystem->UnloadModule( hInstance );
 		return false;
-	}
-
-	// Make sure it's a valid base shader DLL if necessary.
-	//HACKHACK get rid of this when VAC2 comes online.
-	if ( !bModShaderDLL )
-	{
-		VerifyBaseShaderDLL( hInstance );
 	}
 
 	// Allow the DLL to try to connect to interfaces it needs
@@ -530,7 +398,6 @@ bool CShaderSystem::LoadShaderDLL( const char *pFullPath, const char *pPathID, b
 	// Ok, the shader DLL's good!
 	m_ShaderDLLs[nShaderDLLIndex].m_hInstance = hInstance;
 	m_ShaderDLLs[nShaderDLLIndex].m_pShaderDLL = pShaderDLL;
-	m_ShaderDLLs[nShaderDLLIndex].m_bModShaderDLL = bModShaderDLL;
 	
 	// Add the shaders to the dictionary of shaders...
 	SetupShaderDictionary( nShaderDLLIndex );
@@ -665,31 +532,8 @@ void CShaderSystem::SetupShaderDictionary( int nShaderDLLIndex )
 		IShader *pShader = info.m_pShaderDLL->GetShader( i );
 		const char *pShaderName = pShader->GetName();
 
-		// Make sure it doesn't try to override another shader DLL's names.
-		if ( info.m_bModShaderDLL )
-		{
-			for ( int iTestDLL=0; iTestDLL < m_ShaderDLLs.Count(); iTestDLL++ )
-			{
-				ShaderDLLInfo_t *pTestDLL = &m_ShaderDLLs[iTestDLL];
-				if ( !pTestDLL->m_bModShaderDLL )
-				{
-					if ( pTestDLL->m_ShaderDict.Find( pShaderName ) != pTestDLL->m_ShaderDict.InvalidIndex() )
-					{ 
-						Error( "Game shader '%s' trying to override a base shader '%s'.", info.m_pFileName, pShaderName );
-					}
-				}
-			}
-		}
-
 		info.m_ShaderDict.Insert( pShaderName, pShader );
 	}
-}
-
-//-----------------------------------------------------------------------------
-// Cleans up the shader dictionary.
-//-----------------------------------------------------------------------------
-void CShaderSystem::CleanupShaderDictionary( int nShaderDLLIndex )
-{
 }
 
 //-----------------------------------------------------------------------------

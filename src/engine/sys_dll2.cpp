@@ -884,8 +884,6 @@ bool CEngineAPI::OnStartup( void *pInstance, const char *pStartupModName )
 		goto onStartupShutdownVideoMode;
 	}
 
-	materials->ModInit();
-
 	// Setup the material system config record, CreateGameWindow depends on it
 	// (when we're running stand-alone)
 	InitMaterialSystemConfig( InEditMode() );
@@ -923,18 +921,7 @@ void CEngineAPI::OnShutdown()
 	// Shut down the game
 	game->Shutdown();
 
-	materials->ModShutdown();
 	TRACESHUTDOWN( COM_ShutdownFileSystem() );
-}
-
-static bool IsValveMod( const char *pModName )
-{
-	// Figure out if we're running a Valve mod or not.
-	return ( Q_stricmp( GetCurrentMod(), "cstrike" ) == 0 ||
-		Q_stricmp( GetCurrentMod(), "dod" ) == 0 ||
-		Q_stricmp( GetCurrentMod(), "hl1mp" ) == 0 ||
-		Q_stricmp( GetCurrentMod(), "tf" ) == 0 ||
-		Q_stricmp( GetCurrentMod(), "hl2mp" ) == 0 );
 }
 
 //-----------------------------------------------------------------------------
@@ -946,8 +933,7 @@ bool CEngineAPI::ModInit( const char *pModName, const char *pGameDir )
 	host_parms.mod = COM_StringCopy( GetModDirFromPath( pModName ) );
 	host_parms.game = COM_StringCopy( pGameDir );
 
-	// By default, restrict server commands in Valve games and don't restrict them in mods.
-	cl.m_bRestrictServerCommands = IsValveMod( host_parms.mod );
+	cl.m_bRestrictServerCommands = false;
 	cl.m_bRestrictClientCommands = cl.m_bRestrictServerCommands;
 
 	// build the registry path we're going to use for this mod
@@ -998,7 +984,7 @@ InitReturnVal_t CEngineAPI::HandleSetModeError()
 	// show an error, see if the user wants to restart
 	if ( CommandLine()->FindParm( "-safe" ) )
 	{
-		Sys_MessageBox( "Failed to set video mode.\n\nThis game has a minimum requirement of DirectX 7.0 compatible hardware.\n", "Video mode error", false );
+		Sys_MessageBox( "Failed to set video mode.\n\nThis game has a minimum requirement of DirectX 8.0 compatible hardware.\n", "Video mode error", false );
 		return INIT_FAILED;
 	}
 	
@@ -1602,7 +1588,6 @@ bool CDedicatedServerAPI::ModInit( ModInfo_t &info )
 	g_bTextMode = info.m_bTextMode;
 
 	TRACEINIT( COM_InitFilesystem( info.m_pInitialMod ), COM_ShutdownFileSystem() );
-	materials->ModInit();
 
 	// Setup the material system config record, CreateGameWindow depends on it
 	// (when we're running stand-alone)
@@ -1641,7 +1626,6 @@ void CDedicatedServerAPI::ModShutdown( void )
 	// Shut down memory, etc.
 	game->Shutdown();
 
-	materials->ModShutdown();
 	TRACESHUTDOWN( COM_ShutdownFileSystem() );
 }
 

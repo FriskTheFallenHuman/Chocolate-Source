@@ -1,0 +1,22 @@
+//-----------------------------------------------------------------------------
+//	STDSHADER_DX8_EPISODIC.VPC
+//
+//	Project Script
+//-----------------------------------------------------------------------------
+
+$Macro SRCDIR		"..\.."
+$Macro GAMENAME 	"episodic"
+
+$Include "$SRCDIR\materialsystem\stdshaders\stdshader_dx8_base.vpc"
+
+$Configuration
+{
+	$Compiler
+	{
+		$PreprocessorDefinitions		"$BASE;STDSHADER_DX8_EPISODIC_DLL_EXPORT"
+	}
+}
+
+$Project "stdshader_dx8 (Episodic)"
+{
+}

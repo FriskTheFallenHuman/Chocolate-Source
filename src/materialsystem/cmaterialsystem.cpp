@@ -771,22 +771,6 @@ void CMaterialSystem::Shutdown( )
 	BaseClass::Shutdown();
 }
 
-void CMaterialSystem::ModInit()
-{
-	// Set up a default material system config
-	GenerateConfigFromConfigKeyValues( &g_config, false );
-	UpdateConfig( false );
-
-	// Shader system!
-	ShaderSystem()->ModInit();
-}
-
-void CMaterialSystem::ModShutdown()
-{
-	// Shader system!
-	ShaderSystem()->ModShutdown();
-}
-
 //-----------------------------------------------------------------------------
 // Returns the current adapter in use
 //-----------------------------------------------------------------------------
@@ -1366,9 +1350,9 @@ static ConVar mat_fastnobump(		"mat_fastnobump", "0", FCVAR_CHEAT ); // Binds 1-
 static ConVar r_shadowrendertotexture(		"r_shadowrendertotexture", "0" );
 static ConVar r_flashlightdepthtexture(		"r_flashlightdepthtexture", "1" );
 #ifndef _X360
-static ConVar r_waterforceexpensive(		"r_waterforceexpensive", "0" );
+static ConVar r_waterforceexpensive(		"r_waterforceexpensive", "1" );
 #endif
-static ConVar r_waterforcereflectentities(	"r_waterforcereflectentities", "0" );
+static ConVar r_waterforcereflectentities(	"r_waterforcereflectentities", "1" );
 static ConVar mat_motion_blur_enabled( "mat_motion_blur_enabled", "1" );
 
 

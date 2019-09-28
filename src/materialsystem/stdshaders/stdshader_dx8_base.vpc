@@ -5,7 +5,10 @@
 //-----------------------------------------------------------------------------
 
 $Macro SRCDIR		"..\.."
-$Macro OUTBINDIR	"$SRCDIR\..\game\bin"
+$Macro OUTBINNAME	"stdshader_dx8"
+$Macro OUTBINDIR	"$SRCDIR\..\game\$GAMENAME\bin"
+
+$MacroRequired "GAMENAME"
 
 $Include "$SRCDIR\vpc_scripts\source_dll_win32_base.vpc"
 
@@ -13,8 +16,8 @@ $Configuration	"Debug"
 {
 	$General
 	{
-		$OutputDirectory		"Debug_dx8"	
-		$IntermediateDirectory	"Debug_dx8"
+		$OutputDirectory		"Debug_dx8_$GAMENAME"	
+		$IntermediateDirectory	"Debug_dx8_$GAMENAME"
 	}
 }
 
@@ -22,8 +25,8 @@ $Configuration	"Release"
 {
 	$General
 	{
-		$OutputDirectory		"Release_dx8"
-		$IntermediateDirectory	"Release_dx8"
+		$OutputDirectory		"Release_dx8_$GAMENAME"
+		$IntermediateDirectory	"Release_dx8_$GAMENAME"
 	}
 }
 
@@ -42,7 +45,7 @@ $Configuration
 	}
 }
 
-$Project "stdshader_dx8"
+$Project
 {
 	$Folder	"Source Files"
 	{
@@ -59,6 +62,7 @@ $Project "stdshader_dx8"
 		$File	"detail.cpp"
 		$File	"downsample_nohdr_dx80.cpp"
 		$File	"dx8fallbacks.cpp"
+		$File	"eyeball.cpp"
 		$File	"eyes.cpp"
 		$File	"emissive_scroll_blended_pass_dx8_helper.cpp"
 		$File	"flesh_interior_blended_pass_dx8_helper.cpp"
@@ -103,13 +107,16 @@ $Project "stdshader_dx8"
 		$File	"worldvertextransition_dx8_helper.cpp"				
 		$File	"writez_dx8.cpp"						
 		$File	"writestencil_dx8.cpp"						
-		$File	"yuv.cpp"							
-
-		$Folder	"Remove me when VAC2 is out"
-		{
-			$File	"..\shader_dll_verify.cpp"
-			$File	"..\shader_dll_verify.h"
-		}
+		$File	"yuv.cpp"
+		
+		// debug shaders
+		$File	"debugdepth.cpp"
+		$File	"DebugDrawEnvmapMask.cpp"
+		$File	"debugluxel.cpp"
+		$File	"debugnormalmap.cpp"
+		$File	"debugtangentspace.cpp"
+		$File	"fillrate.cpp"
+		$File	"fillrate_dx6.cpp"
 	}
 
 	$Folder	"Header Files"

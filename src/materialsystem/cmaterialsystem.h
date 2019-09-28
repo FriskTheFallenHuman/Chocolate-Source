@@ -81,9 +81,6 @@ public:
 	// Must be called before Init(), if you're going to call it at all...
 	void									SetAdapter( int nAdapter, int nFlags );
 
-	void									ModInit();
-	void									ModShutdown();
-
 private:
 	// Used to dynamically load and unload the shader api
 	CreateInterfaceFn						CreateShaderAPI( const char* pShaderDLL );

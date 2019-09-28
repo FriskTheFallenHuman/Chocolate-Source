@@ -561,11 +561,6 @@ public:
 	// Must be called before Init(), if you're going to call it at all...
 	virtual void				SetAdapter( int nAdapter, int nFlags ) = 0;
 
-	// Call this when the mod has been set up, which may occur after init
-	// At this point, the game + gamebin paths have been set up
-	virtual void				ModInit() = 0;
-	virtual void				ModShutdown() = 0;
-
 	//---------------------------------------------------------
 	//
 	//---------------------------------------------------------

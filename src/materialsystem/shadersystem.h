@@ -168,11 +168,9 @@ public:
 	// Initialization, shutdown
 	virtual void		Init() = 0;
 	virtual void		Shutdown() = 0;
-	virtual void		ModInit() = 0;
-	virtual void		ModShutdown() = 0;
 
 	// Methods related to reading in shader DLLs
-	virtual bool		LoadShaderDLL( const char *pFullPath ) = 0;
+	virtual bool		LoadShaderDLL( const char *pFullPath, const char* pPathID ) = 0;
 	virtual void		UnloadShaderDLL( const char *pFullPath ) = 0;
 
 	// Find me a shader!

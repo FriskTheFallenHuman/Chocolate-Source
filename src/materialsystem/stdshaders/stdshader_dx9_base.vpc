@@ -5,7 +5,10 @@
 //-----------------------------------------------------------------------------
 
 $Macro SRCDIR		"..\.."
-$Macro OUTBINDIR	"$SRCDIR\..\game\bin"
+$Macro OUTBINNAME	"stdshader_dx9"
+$Macro OUTBINDIR	"$SRCDIR\..\game\$GAMENAME\bin"
+
+$MacroRequired "GAMENAME"
 
 $Include "$SRCDIR\vpc_scripts\source_dll_win32_base.vpc"	[$WIN32||$LINUX]
 $Include "$SRCDIR\vpc_scripts\source_dll_x360_base.vpc"		[$X360]
@@ -14,11 +17,8 @@ $Configuration	"Debug"
 {
 	$General
 	{
-		$OutputDirectory		"Debug_dx9"			[$WIN32]
-		$IntermediateDirectory	"Debug_dx9"			[$WIN32]
-		
-		$OutputDirectory		"Debug_dx9_360"		[$X360]
-		$IntermediateDirectory	"Debug_dx9_360"		[$X360]
+		$OutputDirectory		"Debug_dx9_$GAMENAME"			[$WIN32]
+		$IntermediateDirectory	"Debug_dx9_$GAMENAME"			[$WIN32]
 	}
 }
 
@@ -26,11 +26,8 @@ $Configuration	"Release"
 {
 	$General
 	{
-		$OutputDirectory		"Release_dx9"		[$WIN32]
-		$IntermediateDirectory	"Release_dx9"		[$WIN32]
-
-		$OutputDirectory		"Release_dx9_360"	[$X360]
-		$IntermediateDirectory	"Release_dx9_360"	[$X360]
+		$OutputDirectory		"Release_dx9_$GAMENAME"		[$WIN32]
+		$IntermediateDirectory	"Release_dx9_$GAMENAME"		[$WIN32]
 	}
 }
 
@@ -51,7 +48,7 @@ $Configuration
 	}
 }
 
-$Project "stdshader_dx9"
+$Project
 {
 	$Folder	"Source Files"
 	{
@@ -81,6 +78,7 @@ $Project "stdshader_dx9"
 		$File	"downsample_nohdr.cpp"
 		$File	"Engine_Post_dx9.cpp"
 		$File	"emissive_scroll_blended_pass_helper.cpp"
+		$File	"eyeball.cpp"
 		$File	"eye_refract.cpp"
 		$File	"eye_refract_helper.cpp"
 		$File	"eyes_dx8_dx9_helper.cpp"
@@ -152,28 +150,14 @@ $Project "stdshader_dx9"
 		$File	"writez_dx9.cpp"
 		$File	"writestencil_dx9.cpp"
 
-		$Folder	"Remove me when VAC2 is out" [$WIN32]
-		{
-			$File	"$SRCDIR\tier1\checksum_crc.cpp"
-			$File	"$SRCDIR\tier1\checksum_md5.cpp"
-			$File	"..\shader_dll_verify.cpp"
-			$File	"..\shader_dll_verify.h"
-		}
-
-		// 360 collapes stdshader_dbg.dll into stdshader_dx9.dll
-		$Folder	"stdshader_dbg Files" [$X360]
-		{
-			$File	"debugdepth.cpp"
-			$File	"DebugDrawEnvmapMask.cpp"
-			$File	"debugluxel.cpp"
-			$File	"debugnormalmap.cpp"
-			$File	"debugtangentspace.cpp"
-			$File	"fillrate.cpp"
-			$File	"fillrate_dx6.cpp"
-
-			// dead shader, but hl2 models have it
-			$File	"eyeball.cpp"
-		}
+		// debug shaders
+		$File	"debugdepth.cpp"
+		$File	"DebugDrawEnvmapMask.cpp"
+		$File	"debugluxel.cpp"
+		$File	"debugnormalmap.cpp"
+		$File	"debugtangentspace.cpp"
+		$File	"fillrate.cpp"
+		$File	"fillrate_dx6.cpp"
 	}
 
 	$Folder "Xbox"	[$X360]
