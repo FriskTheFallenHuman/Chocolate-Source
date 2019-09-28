@@ -5,11 +5,11 @@
 // $NoKeywords: $
 //=============================================================================//
 
+#include "pch_tier0.h"
+
 #ifdef _LINUX
 #include "cpu_linux.cpp"
 #endif
-
-#include "pch_tier0.h"
 
 #if defined(_WIN32) && !defined(_X360)
 #define WINDOWS_LEAN_AND_MEAN

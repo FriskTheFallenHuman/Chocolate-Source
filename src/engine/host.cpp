@@ -2442,8 +2442,9 @@ void Host_ShowIPCCallCount()
 	double flCurTime = Plat_FloatTime();
 	if ( flCurTime - s_flLastTime >= flInterval )
 	{
-		uint32 callCount;
 #ifndef NO_STEAM
+		uint32 callCount;
+
 		ISteamClient *pSteamClient = SteamClient();
 		if ( pSteamClient )
 		{
@@ -2461,10 +2462,12 @@ void Host_ShowIPCCallCount()
 		int tickCount = host_tickcount - s_nLastTick;
 		if ( frameCount == 0 || tickCount == 0 )
 			return;
-			
+
+#ifndef NO_STEAM
 		Msg( "host_ShowIPCCallCount: %d IPC calls in the past [%d frames, %d ticks]  Avg: [%.2f/frame, %.2f/tick]\n", 
 			callCount, frameCount, tickCount, (float)callCount / frameCount, (float)callCount / tickCount );
-			
+#endif
+
 		s_flLastTime = flCurTime;
 		s_nLastTick = host_tickcount;
 		s_nLastFrame = host_framecount;

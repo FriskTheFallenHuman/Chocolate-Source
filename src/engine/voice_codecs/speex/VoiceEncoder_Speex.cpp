@@ -141,7 +141,7 @@ void VoiceEncoder_Speex::EncodeFrame(const char *pUncompressedBytes, char *pComp
 	speex_encode( m_EncoderState, input, &m_Bits );
 
 	/*Copy the bits to an array of char that can be written*/
-	int size = speex_bits_write(&m_Bits, pCompressed, ENCODED_FRAME_SIZE[m_Quality] );
+	//int size = speex_bits_write(&m_Bits, pCompressed, ENCODED_FRAME_SIZE[m_Quality] );
 
 	// char text[255];	_snprintf(text, 255, "outsize %i,", size ); OutputDebugStr( text );
 }

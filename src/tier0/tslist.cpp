@@ -10,6 +10,8 @@
 #include "xbox/xbox_win32stubs.h"
 #endif
 
+#pragma warning( disable:4101 ) // foo unreferenced local variable
+
 namespace TSListTests
 {
 int NUM_TEST = 10000;
