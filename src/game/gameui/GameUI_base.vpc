@@ -5,9 +5,30 @@
 //-----------------------------------------------------------------------------
 
 $macro SRCDIR		"..\.."
-$Macro OUTBINDIR	"$SRCDIR\..\game\hl2\bin"
+$Macro OUTBINNAME	"gameui"
+$Macro OUTBINDIR	"$SRCDIR\..\game\$GAMENAME\bin"
+
+$MacroRequired "GAMENAME"
 
 $include "$SRCDIR\vpc_scripts\source_dll_win32_base.vpc"	[$WIN32||$LINUX]
+
+$Configuration	"Debug"
+{
+	$General
+	{
+		$OutputDirectory		"Debug_$GAMENAME"	
+		$IntermediateDirectory	"Debug_$GAMENAME"
+	}
+}
+
+$Configuration	"Release"
+{
+	$General
+	{
+		$OutputDirectory		"Release_$GAMENAME"
+		$IntermediateDirectory	"Release_$GAMENAME"
+	}
+}
 
 $Configuration
 {
@@ -23,7 +44,7 @@ $Configuration
 	}
 }
 
-$Project "GameUI"
+$Project
 {
 	$Folder	"Source Files"
 	{

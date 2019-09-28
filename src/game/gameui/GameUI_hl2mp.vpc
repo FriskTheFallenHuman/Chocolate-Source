@@ -1,0 +1,15 @@
+//-----------------------------------------------------------------------------
+//	GAMEUI_HL2MP.VPC
+//
+//	Project Script
+//-----------------------------------------------------------------------------
+
+$Macro SRCDIR		"..\.."
+$Macro GAMENAME 	"hl2mp"
+
+$Include "$SRCDIR\game\gameui\GameUI_base.vpc"
+
+
+$Project "GameUI (HL2MP)"
+{
+}
