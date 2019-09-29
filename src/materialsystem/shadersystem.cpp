@@ -274,6 +274,13 @@ void CShaderSystem::LoadAllShaderDLLs( )
 	SetupShaderDictionary( i );
 
 #if defined( _WIN32 )
+	// 360 has the the debug shaders in its dx9 dll
+	if ( IsPC() || !IsX360() )
+	{
+		// Always need the debug shaders
+		LoadShaderDLL( "stdshader_dbg" );
+	}
+
 	// Load up standard shader DLLs...
 	int dxSupportLevel = HardwareConfig()->GetMaxDXSupportLevel();
 	Assert( dxSupportLevel >= 60 );

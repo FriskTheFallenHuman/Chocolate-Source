@@ -18,6 +18,7 @@ $Group "shaders"
 {
 	"shaderapiempty"
 	"shaderlib"
+	"stdshader_dbg"
 	"stdshader_dx8"
 	"stdshader_dx9"
 }

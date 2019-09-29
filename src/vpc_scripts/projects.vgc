@@ -327,6 +327,11 @@ $Project "sqlwrapper"
 	"utils\sqlwrapper\sqlwrapper.vpc" [$WIN32]
 }
 
+$Project "stdshader_dbg"
+{
+	"materialsystem\stdshaders\stdshader_dbg.vpc" [$WIN32||$X360]
+}
+
 $Project "stdshader_dx8"
 {
 	"materialsystem\stdshaders\stdshader_dx8_hl2.vpc"		[($WIN32) && $HL2]
