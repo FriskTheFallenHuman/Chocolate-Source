@@ -278,7 +278,7 @@ void CShaderSystem::LoadAllShaderDLLs( )
 	if ( IsPC() || !IsX360() )
 	{
 		// Always need the debug shaders
-		LoadShaderDLL( "stdshader_dbg" );
+		LoadShaderDLL( "stdshader_dbg", NULL );
 	}
 
 	// Load up standard shader DLLs...

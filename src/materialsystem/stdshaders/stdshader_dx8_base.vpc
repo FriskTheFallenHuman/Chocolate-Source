@@ -108,15 +108,6 @@ $Project
 		$File	"writez_dx8.cpp"						
 		$File	"writestencil_dx8.cpp"						
 		$File	"yuv.cpp"
-		
-		// debug shaders
-		$File	"debugdepth.cpp"
-		$File	"DebugDrawEnvmapMask.cpp"
-		$File	"debugluxel.cpp"
-		$File	"debugnormalmap.cpp"
-		$File	"debugtangentspace.cpp"
-		$File	"fillrate.cpp"
-		$File	"fillrate_dx6.cpp"
 	}
 
 	$Folder	"Header Files"

@@ -149,15 +149,6 @@ $Project
 		$File	"worldvertextransition_dx8_helper.cpp"
 		$File	"writez_dx9.cpp"
 		$File	"writestencil_dx9.cpp"
-
-		// debug shaders
-		$File	"debugdepth.cpp"
-		$File	"DebugDrawEnvmapMask.cpp"
-		$File	"debugluxel.cpp"
-		$File	"debugnormalmap.cpp"
-		$File	"debugtangentspace.cpp"
-		$File	"fillrate.cpp"
-		$File	"fillrate_dx6.cpp"
 	}
 
 	$Folder "Xbox"	[$X360]
