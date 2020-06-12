@@ -53,7 +53,7 @@ $Project "Dedicated_main"
 
 	$Folder	"Resources"
 	{
-		$File	"$SRCDIR\launcher\res\launcher.ico"
+		$File	"$SRCDIR\dedicated\res\dedicated.ico"
 		$File	"dedicated_main.rc"
 	}
 	
