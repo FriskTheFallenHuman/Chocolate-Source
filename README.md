@@ -1,5 +1,5 @@
 # Chocolate Source :chocolate_bar:
-Custom Source Engine branch based on Source Engine 2007 currently available on Windows in x86. Forked from [SE2007Tweaked](https://gitlab.com/Juesto/SE2007_src-tweaked) and [Quiver](https://github.com/quiverteam/Engine).
+Custom Source Engine branch based on Source Engine 2007 currently available on Windows in x86. Forked from [SE2007Tweaked](https://gitlab.com/Juesto/SE2007_src-tweaked)
 
 # :hammer: Building
 
@@ -23,10 +23,10 @@ Custom Source Engine branch based on Source Engine 2007 currently available on W
 * Scenes.image enforcement removed (able to load both from image and VCDs)
 * Remove bug report.
 * Multi-instance support (Aka - running multiple engine windows at the same time)
-* Mod base GameUI.dll like leaked engine from 2003.
+* Embedded GameUI like L4D2.
 * Remove unfinished dx10 api.
 * Remove Dx7 and 6 Support.
-* Protocol Version is 15.
+* Protocol change to 15.
 * L4D2 "Subtitles" system ( now the engine and game reads subtitles_%lang% instead of the old way )
 * Valve_Avi **=>** VideoServices
 * Remove P4 Support

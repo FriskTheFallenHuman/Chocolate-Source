@@ -40,11 +40,14 @@ using namespace vgui;
 static float	g_ScrollSpeedSlow;
 static float	g_ScrollSpeedFast;
 
+extern const char *COM_GetModDirectory();
+
 // sort function used in displaying chapter list
 struct chapter_t
 {
 	char filename[32];
 };
+
 static int __cdecl ChapterSortFunc(const void *elem1, const void *elem2)
 {
 	chapter_t *c1 = (chapter_t *)elem1;
@@ -272,24 +275,6 @@ public:
 			m_pCommentaryIcon->SetVisible( m_bCommentaryMode );
 	}
 };
-
-const char *COM_GetModDirectory()
-{
-	static char modDir[MAX_PATH];
-	if ( Q_strlen( modDir ) == 0 )
-	{
-		const char *gamedir = CommandLine()->ParmValue("-game", CommandLine()->ParmValue( "-defaultgamedir", "hl2" ) );
-		Q_strncpy( modDir, gamedir, sizeof(modDir) );
-		if ( strchr( modDir, '/' ) || strchr( modDir, '\\' ) )
-		{
-			Q_StripLastDir( modDir, sizeof(modDir) );
-			int dirlen = Q_strlen( modDir );
-			Q_strncpy( modDir, gamedir + dirlen, sizeof(modDir) - dirlen );
-		}
-	}
-
-	return modDir;
-}
 
 //-----------------------------------------------------------------------------
 // Purpose: new game chapter selection
@@ -553,7 +538,7 @@ void CNewGameDialog::Activate( void )
 	if ( GameUI().IsConsoleUI() )
 	{
 		// Stop blinking the menu item now that we've seen the unlocked stuff
-		CBasePanel *pBasePanel = BasePanel();
+		CBaseModPanel *pBasePanel = BasePanel();
 		if ( pBasePanel )
 			pBasePanel->SetMenuItemBlinkingState( "OpenNewGameDialog", false );
 

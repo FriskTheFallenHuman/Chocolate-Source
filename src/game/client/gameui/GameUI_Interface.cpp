@@ -82,7 +82,7 @@ IVEngineClient *engine = NULL;
 IEngineSound *enginesound = NULL;
 IAchievementMgr *achievementmgr = NULL;
 
-static CBasePanel *staticPanel = NULL;
+static CBaseModPanel *staticPanel = NULL;
 
 class CGameUI;
 CGameUI *g_pGameUI = NULL;
@@ -177,7 +177,7 @@ void CGameUI::Initialize( CreateInterfaceFn factory )
 	}
 
 	// setup base panel
-	staticPanel = new CBasePanel();
+	staticPanel = new CBaseModPanel();
 	staticPanel->SetBounds(0, 0, 400, 300 );
 	staticPanel->SetPaintBorderEnabled( false );
 	staticPanel->SetPaintBackgroundEnabled( true );
@@ -230,7 +230,7 @@ void CGameUI::BonusMapUnlock( const char *pchFileName, const char *pchMapName )
 		if ( !g_pBonusMapsDialog )
 		{
 			// It unlocked without the bonus maps menu open, so flash the menu item
-			CBasePanel *pBasePanel = BasePanel();
+			CBaseModPanel *pBasePanel = BasePanel();
 			if ( pBasePanel )
 			{
 				if ( GameUI().IsConsoleUI() )

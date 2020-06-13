@@ -559,16 +559,14 @@ bool CEngineVGui::SetVGUIDirectories()
 //-----------------------------------------------------------------------------
 void CEngineVGui::Init()
 {
-	COM_TimestampedLog( "Loading Mod gameui.dll" );
+	const char *szDllName = "";
 
-	// load the GameUI dll
-	const char *szDllName = "gameui";
-	m_hStaticGameUIModule = g_pFileSystem->LoadModule(szDllName, "GAMEBIN", true); // LoadModule() does a GetLocalCopy() call
-	m_GameUIFactory = Sys_GetFactory(m_hStaticGameUIModule);
-	if ( !m_GameUIFactory )
-	{
-		Error( "Could not load: %s\n", szDllName );
-	}
+	COM_TimestampedLog( "Loading IGameUI interface from client.dll" );
+
+	// Get the gameui interfaces from client.dll
+	extern CreateInterfaceFn g_ClientFactory;
+	m_GameUIFactory = g_ClientFactory;
+	szDllName = "client";
 	
 	// get the initialization func
 	staticGameUIFuncs = (IGameUI *)m_GameUIFactory(GAMEUI_INTERFACE_VERSION, NULL);
@@ -692,6 +690,8 @@ void CEngineVGui::Init()
 	staticGameUIPanel->SetVisible( true );
 	staticGameUIPanel->SetCursor( vgui::dc_none );
 	staticGameUIPanel->SetZPos( 100 );
+	
+	COM_TimestampedLog( "Building Panels (staticGameDLLPanel)" );
 
 	staticGameDLLPanel = new CEnginePanel( staticPanel, "staticGameDLLPanel" );
 	staticGameDLLPanel->SetBounds( 0, 0, videomode->GetModeWidth(), videomode->GetModeHeight() );
@@ -709,6 +709,8 @@ void CEngineVGui::Init()
 
 		staticDebugSystemPanel = new CDebugSystemPanel( staticPanel, "Engine Debug System" );
 		staticDebugSystemPanel->SetZPos( 125 );
+		
+		COM_TimestampedLog( "Install DemoUI tools" );
 
 		// Install demo playback/editing UI
 		CDemoUIPanel::InstallDemoUI( staticEngineToolsPanel );
@@ -722,11 +724,15 @@ void CEngineVGui::Init()
 		// Create a performance toolkit system
 		perftools->InstallPerformanceToolsUI( staticEngineToolsPanel );
 		perftools->Init();
+		
+		COM_TimestampedLog( "Install color correction tools" );
 
 		// Create a color correction UI
 		colorcorrectiontools->InstallColorCorrectionUI( staticEngineToolsPanel );
 		colorcorrectiontools->Init();
 	}
+	
+	COM_TimestampedLog( "Building Panels (staticFocusOverlayPanel)" );
 
 	// Make sure this is on top of everything
 	staticFocusOverlayPanel = new CFocusOverlayPanel( staticPanel, "FocusOverlayPanel" );

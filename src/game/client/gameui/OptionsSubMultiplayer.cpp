@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //=============================================================================//
 
+#undef fopen
 
 #if !defined( _X360 )
 #include <windows.h> // SRC only!!
@@ -583,7 +584,7 @@ void COptionsSubMultiplayer::OnCommand( const char *command )
 			m_hImportSprayDialog->AddFilter("*.tga,*.jpg,*.bmp,*.vtf", "#GameUI_All_Images", true);
 			m_hImportSprayDialog->AddFilter("*.tga", "#GameUI_TGA_Images", false);
 			m_hImportSprayDialog->AddFilter("*.jpg", "#GameUI_JPEG_Images", false);
-			m_hImportSprayDialog->AddFilter("*.bmp", "#GameUI_BMP_Images", false);
+			//m_hImportSprayDialog->AddFilter("*.bmp", "#GameUI_BMP_Images", false);
 			m_hImportSprayDialog->AddFilter("*.vtf", "#GameUI_VTF_Images", false);
 			m_hImportSprayDialog->AddActionSignalTarget(this);
 		}
@@ -686,6 +687,7 @@ void COptionsSubMultiplayer::OnFileSelected(const char *fullpath)
 				}
 			}
 		}
+#if 0
 		else if (!stricmp(extension, "bmp"))
 		{
 			// convert from the bmp file format to the TGA file format
@@ -727,6 +729,7 @@ void COptionsSubMultiplayer::OnFileSelected(const char *fullpath)
 				}
 			}
 		}
+#endif
 		else if (!stricmp(extension, "vtf"))
 		{
 			// if the file is already in the vtf format there's no need to convert it.
@@ -1063,6 +1066,7 @@ ConversionErrorType COptionsSubMultiplayer::ConvertJPEGToTGA(const char *jpegpat
 #endif
 }
 
+#if 0
 // convert the bmp file given to a TGA file at the given destination path.
 ConversionErrorType COptionsSubMultiplayer::ConvertBMPToTGA(const char *bmpPath, const char *tgaPath)
 {
@@ -1287,6 +1291,7 @@ ConversionErrorType COptionsSubMultiplayer::ConvertBMPToTGA(const char *bmpPath,
 	DeleteObject(hBitmap);
 	return retval ? CE_SUCCESS : CE_ERROR_WRITING_OUTPUT_FILE;
 }
+#endif
 
 // read a TGA header from the current point in the file stream.
 static void ReadTGAHeader(FILE *infile, TGAHeader &header)

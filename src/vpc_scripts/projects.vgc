@@ -132,14 +132,6 @@ $Project "filesystem_stdio"
 	"filesystem\filesystem_stdio.vpc" [$WIN32]
 }
 
-$Project "GameUI"
-{
-	"game\gameui\GameUI_hl2.vpc"		[($WIN32||$POSIX) && $HL2]
-	"game\gameui\GameUI_episodic.vpc"	[($WIN32||$POSIX) && $EPISODIC]
-	"game\gameui\GameUI_hl2mp.vpc"		[($WIN32||$POSIX) && $HL2MP]
-
-}
-
 $Project "havana_constraints"
 {
 	"ivp\havana\havana_constraints.vpc" [$WIN32]

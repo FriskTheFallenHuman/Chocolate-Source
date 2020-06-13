@@ -489,11 +489,11 @@ int SaveReadNameAndComment( FileHandle_t f, char *name, char *comment )
 
 		if (!stricmp(pFieldName, "comment"))
 		{
-			strncpy(comment, pData, nFieldSize);
+			Q_strncpy(comment, pData, nFieldSize);
 		}
 		else if (!stricmp(pFieldName, "mapName"))
 		{
-			strncpy(name, pData, nFieldSize);
+			Q_strncpy(name, pData, nFieldSize);
 		};
 
 		// Move to Start of next field.

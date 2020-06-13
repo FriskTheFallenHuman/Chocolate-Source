@@ -118,7 +118,7 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-// Purpose: EditablePanel that can replace the GameMenuButtons in CBasePanel
+// Purpose: EditablePanel that can replace the GameMenuButtons in CBaseModPanel
 //-----------------------------------------------------------------------------
 class CMainMenuGameLogo : public vgui::EditablePanel
 {
@@ -158,13 +158,13 @@ private:
 // Purpose: This is the panel at the top of the panel hierarchy for GameUI
 //			It handles all the menus, background images, and loading dialogs
 //-----------------------------------------------------------------------------
-class CBasePanel : public vgui::Panel
+class CBaseModPanel : public vgui::Panel
 {
-	DECLARE_CLASS_SIMPLE( CBasePanel, vgui::Panel );
+	DECLARE_CLASS_SIMPLE( CBaseModPanel, vgui::Panel );
 
 public:
-	CBasePanel();
-	virtual ~CBasePanel();
+	CBaseModPanel();
+	virtual ~CBaseModPanel();
 
 public:
 	//
@@ -267,7 +267,7 @@ public:
 	bool IsWaitingForConsoleUI( void ) { return m_bWaitingForStorageDeviceHandle || m_bWaitingForUserSignIn || m_bXUIVisible; }
 
 #if defined( _X360 )
-	CON_COMMAND_MEMBER_F( CBasePanel, "gameui_reload_resources", Reload_Resources, "Reload the Xbox 360 UI res files", 0 );
+	CON_COMMAND_MEMBER_F( CBaseModPanel, "gameui_reload_resources", Reload_Resources, "Reload the Xbox 360 UI res files", 0 );
 #endif
 
 protected:
@@ -432,7 +432,7 @@ private:
 //-----------------------------------------------------------------------------
 // Purpose: singleton accessor
 //-----------------------------------------------------------------------------
-extern CBasePanel *BasePanel();
+extern CBaseModPanel *BasePanel();
 
 
 #endif // BASEPANEL_H

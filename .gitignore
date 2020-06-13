@@ -45,6 +45,12 @@ ipch
 [dD]esktop.ini
 [Tt]humbs.db
 
+# Game Related content & DLL
+game/hl2/bin/*
+game/episodic/bin/*
+game/ep2/bin/*
+game/hl2mp/bin/*
+
 # Specific Source build products
 
 *.bsp

@@ -10,8 +10,10 @@ $Macro DEVKITBINDIR	"$GAMENAME\bin"							[$X360]
 
 $MacroRequired "GAMENAME"
 
+
 $Include "$SRCDIR\vpc_scripts\source_dll_win32_base.vpc"	[$WIN32||$LINUX]
 $Include "$SRCDIR\vpc_scripts\source_dll_x360_base.vpc"		[$X360]
+$Include "$SRCDIR\game\client\gameui_embedded.vpc"	
 
 $Configuration	"Debug"
 {

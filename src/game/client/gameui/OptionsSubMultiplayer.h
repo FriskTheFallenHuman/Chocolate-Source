@@ -138,7 +138,7 @@ private:
 
 	// Begin Spray Import Functions
 	ConversionErrorType ConvertJPEGToTGA(const char *jpgPath, const char *tgaPath);
-	ConversionErrorType ConvertBMPToTGA(const char *bmpPath, const char *tgaPath);
+	//ConversionErrorType ConvertBMPToTGA(const char *bmpPath, const char *tgaPath);
 	ConversionErrorType ConvertTGA(const char *tgaPath);
 	unsigned char *ReadTGAAsRGBA(const char *tgaPath, int &width, int &height, ConversionErrorType &errcode, TGAHeader &tgaHeader);
 	ConversionErrorType StretchRGBAImage(const unsigned char *srcBuf, const int srcWidth, const int srcHeight, unsigned char *destBuf, const int destWidth, const int destHeight);
